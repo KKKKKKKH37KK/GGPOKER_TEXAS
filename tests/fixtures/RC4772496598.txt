@@ -1,0 +1,44 @@
+Poker Hand #RC4772496598: Hold'em No Limit ($0.05/$0.1) - 2026/09/02 00:21:32
+Table 'RushAndCash15181858' 6-max Seat #1 is the button
+Seat 1: 8a40bad2 ($12.35 in chips)
+Seat 2: a7c2473f ($12.42 in chips)
+Seat 3: 9f635943 ($10.15 in chips)
+Seat 4: Hero ($22.88 in chips)
+Seat 5: a3d7b5a6 ($12.84 in chips)
+Seat 6: 9c7652f2 ($10 in chips)
+a7c2473f: posts small blind $0.05
+9f635943: posts big blind $0.1
+*** HOLE CARDS ***
+Dealt to 8a40bad2 
+Dealt to a7c2473f 
+Dealt to 9f635943 
+Dealt to Hero [3s 5s]
+Dealt to a3d7b5a6 
+Dealt to 9c7652f2 
+Hero: folds
+a3d7b5a6: raises $0.12 to $0.22
+9c7652f2: folds
+8a40bad2: raises $0.53 to $0.75
+a7c2473f: raises $1.65 to $2.4
+9f635943: folds
+a3d7b5a6: folds
+8a40bad2: raises $9.95 to $12.35 and is all-in
+a7c2473f: calls $9.95
+8a40bad2: shows [As Ah]
+a7c2473f: shows [Kd Ks]
+*** FLOP *** [Js Th 8h]
+*** TURN *** [Js Th 8h] [2s]
+8a40bad2: Chooses to EV Cashout
+*** RIVER *** [Js Th 8h 2s] [Qh]
+8a40bad2: Pays Cashout Risk ($0.78)
+*** SHOWDOWN ***
+8a40bad2 collected $24.57 from pot
+*** SUMMARY ***
+Total pot $25.02 | Rake $0.3 | Jackpot $0.15 | Bingo $0 | Fortune $0 | Tax $0
+Board [Js Th 8h 2s Qh]
+Seat 1: 8a40bad2 (button) showed [As Ah] and won ($24.57) with a pair of Aces, Cashout Risk ($0.78)
+Seat 2: a7c2473f (small blind) showed [Kd Ks] and lost with a pair of Kings
+Seat 3: 9f635943 (big blind) folded before Flop
+Seat 4: Hero folded before Flop (didn't bet)
+Seat 5: a3d7b5a6 folded before Flop
+Seat 6: 9c7652f2 folded before Flop (didn't bet)

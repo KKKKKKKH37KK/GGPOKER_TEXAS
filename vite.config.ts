@@ -1,0 +1,16 @@
+/// <reference types="vitest/config" />
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  // Relative base so the build also works from GitHub Pages or a local file server.
+  base: './',
+  plugins: [react()],
+  worker: { format: 'es' },
+  build: { chunkSizeWarningLimit: 800 }, // Recharts is most of the bundle; fine for a local tool
+  test: {
+    environment: 'node',
+    include: ['tests/**/*.test.ts'],
+    testTimeout: 60_000,
+  },
+});

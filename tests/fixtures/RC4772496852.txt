@@ -1,0 +1,51 @@
+Poker Hand #RC4772496852: Hold'em No Limit ($0.05/$0.1) - 2026/09/02 00:22:12
+Table 'RushAndCash15182112' 6-max Seat #1 is the button
+Seat 1: cacc27d1 ($9.69 in chips)
+Seat 2: 9fea9e4f ($11.47 in chips)
+Seat 3: cf9f011f ($11.62 in chips)
+Seat 4: 183da77a ($22.45 in chips)
+Seat 5: Hero ($22.58 in chips)
+Seat 6: dfdc95ac ($10.45 in chips)
+9fea9e4f: posts small blind $0.05
+cf9f011f: posts big blind $0.1
+*** HOLE CARDS ***
+Dealt to cacc27d1 
+Dealt to 9fea9e4f 
+Dealt to cf9f011f 
+Dealt to 183da77a 
+Dealt to Hero [2h 2c]
+Dealt to dfdc95ac 
+183da77a: raises $0.1 to $0.2
+Hero: folds
+dfdc95ac: folds
+cacc27d1: raises $0.4 to $0.6
+9fea9e4f: folds
+cf9f011f: folds
+183da77a: raises $1.25 to $1.85
+cacc27d1: calls $1.25
+*** FIRST FLOP *** [Jd 9s 4s]
+183da77a: bets $1.28
+cacc27d1: calls $1.28
+*** FIRST TURN *** [Jd 9s 4s] [8d]
+183da77a: bets $19.32 and is all-in
+cacc27d1: calls $6.56 and is all-in
+Uncalled bet ($12.76) returned to 183da77a
+183da77a: shows [Jc Ks] (a pair of Jacks)
+cacc27d1: shows [Td Ts] (a pair of Tens)
+*** FIRST RIVER *** [Jd 9s 4s 8d] [3d]
+*** SECOND RIVER *** [Jd 9s 4s 8d] [7h]
+*** FIRST SHOWDOWN ***
+183da77a collected $9.54 from pot
+*** SECOND SHOWDOWN ***
+cacc27d1 collected $9.54 from pot
+*** SUMMARY ***
+Total pot $19.53 | Rake $0.3 | Jackpot $0.15 | Bingo $0 | Fortune $0 | Tax $0
+Hand was run two times
+FIRST Board [Jd 9s 4s 8d 3d]
+SECOND Board [7h]
+Seat 1: cacc27d1 (button) showed [Td Ts] and lost with a pair of Tens, and won ($9.54)
+Seat 2: 9fea9e4f (small blind) folded before Flop
+Seat 3: cf9f011f (big blind) folded before Flop
+Seat 4: 183da77a showed [Jc Ks] and won ($9.54) with a pair of Jacks, and lost
+Seat 5: Hero folded before Flop (didn't bet)
+Seat 6: dfdc95ac folded before Flop (didn't bet)

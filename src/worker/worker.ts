@@ -1,0 +1,79 @@
+/// <reference lib="webworker" />
+import { allInEvNet } from '../equity/allinEv';
+import { parseFiles, readZip, type SourceFile } from '../parser/parseZip';
+import type { Hand } from '../parser/types';
+import { heroNet } from '../stats/accounting';
+import { analyzeHand } from '../stats/facts';
+import type { FromWorker, ToWorker } from './protocol';
+
+declare const self: DedicatedWorkerGlobalScope;
+
+let hands: Hand[] = [];
+let loadToken = 0;
+
+const post = (msg: FromWorker) => self.postMessage(msg);
+
+self.onmessage = async (e: MessageEvent<ToWorker>) => {
+  const msg = e.data;
+  try {
+    if (msg.type === 'load') await load(msg.files);
+    else if (msg.type === 'exportHands') {
+      const set = msg.ids ? new Set(msg.ids) : null;
+      post({ type: 'exported', json: JSON.stringify(set ? hands.filter((h) => set.has(h.id)) : hands, null, 1) });
+    }
+  } catch (err) {
+    post({ type: 'error', message: (err as Error).message ?? String(err) });
+  }
+};
+
+async function load(files: { name: string; data: ArrayBuffer }[]) {
+  const token = ++loadToken;
+  const t0 = performance.now();
+  const sources: SourceFile[] = [];
+  const decoder = new TextDecoder('utf-8');
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    if (/\.zip$/i.test(f.name)) {
+      sources.push(...(await readZip(f.data, (_p, d, t) => post({ type: 'progress', phase: 'unzip', done: d, total: t }))));
+    } else if (/\.txt$/i.test(f.name)) {
+      sources.push({ name: f.name, text: decoder.decode(f.data) });
+    }
+    post({ type: 'progress', phase: 'read', done: i + 1, total: files.length });
+  }
+  if (sources.length === 0) throw new Error('沒有找到任何 .txt 手牌檔（請拖入 GG 匯出的 .zip 或 .txt）');
+
+  const result = parseFiles(sources, (_p, d, t) => post({ type: 'progress', phase: 'parse', done: d, total: t }));
+  hands = result.hands;
+
+  const facts = hands.map((h, i) => {
+    if (i % 2000 === 0) post({ type: 'progress', phase: 'stats', done: i, total: hands.length });
+    return analyzeHand(h);
+  });
+  post({
+    type: 'loaded',
+    facts,
+    summary: {
+      fileCount: result.fileCount,
+      skipped: result.skipped,
+      errorCount: result.errorCount,
+      duplicates: result.duplicates,
+      warnings: result.warnings,
+      otherGamesNetCents: result.otherGames.reduce((a, h) => a + heroNet(h), 0),
+      elapsedMs: performance.now() - t0,
+    },
+  });
+
+  // All-in EV (P1) is slower; stream it after the report is on screen.
+  const t1 = performance.now();
+  const ev: Record<string, number> = {};
+  for (let i = 0; i < hands.length; i++) {
+    const v = allInEvNet(hands[i]);
+    if (v !== null) ev[hands[i].id] = v;
+    if (i % 2000 === 0) {
+      post({ type: 'progress', phase: 'ev', done: i, total: hands.length });
+      await new Promise((r) => setTimeout(r)); // let a newer load or export request in
+      if (token !== loadToken) return;
+    }
+  }
+  post({ type: 'ev', ev, elapsedMs: performance.now() - t1 });
+}

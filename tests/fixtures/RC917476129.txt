@@ -1,0 +1,33 @@
+Poker Hand #RC917476129: Omaha Pot Limit ($0.05/$0.1) - 2026/09/25 20:20:57
+Table 'RushAndCash4856012' 6-max Seat #1 is the button
+Seat 1: 5787fab9 ($7.81 in chips)
+Seat 2: b96e23b8 ($10 in chips)
+Seat 3: Hero ($10 in chips)
+Seat 4: 60b7e352 ($41.91 in chips)
+Seat 5: e195300c ($10 in chips)
+Seat 6: 6a66eba2 ($3.77 in chips)
+b96e23b8: posts small blind $0.05
+Hero: posts big blind $0.1
+*** HOLE CARDS ***
+Dealt to 5787fab9 
+Dealt to b96e23b8 
+Dealt to Hero [9c 8s Th Qs]
+Dealt to 60b7e352 
+Dealt to e195300c 
+Dealt to 6a66eba2 
+60b7e352: folds
+e195300c: folds
+6a66eba2: folds
+5787fab9: folds
+b96e23b8: folds
+Uncalled bet ($0.05) returned to Hero
+*** SHOWDOWN ***
+Hero collected $0.1 from pot
+*** SUMMARY ***
+Total pot $0.1 | Rake $0 | Jackpot $0 | Bingo $0 | Fortune $0 | Tax $0
+Seat 1: 5787fab9 (button) folded before Flop (didn't bet)
+Seat 2: b96e23b8 (small blind) folded before Flop
+Seat 3: Hero (big blind) collected ($0.1)
+Seat 4: 60b7e352 folded before Flop (didn't bet)
+Seat 5: e195300c folded before Flop (didn't bet)
+Seat 6: 6a66eba2 folded before Flop (didn't bet)

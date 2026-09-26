@@ -1,0 +1,13 @@
+# Raw hand histories must never be committed (PRD §8)
+*.zip
+data/
+hh/
+raw/
+# Personal spec with real results — kept local only
+PRD.md
+
+node_modules/
+dist/
+coverage/
+*.local
+.vite/
