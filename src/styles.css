@@ -823,8 +823,13 @@ ul.findings .finding.watch {
 }
 
 /* Luck meter */
+.luck-card h2 {
+  justify-content: center;
+}
 .luck-card .luck-meter {
   max-width: 520px;
+  margin: 0 auto;
+  text-align: center;
 }
 .luck-card .luck-step .luck-icon {
   font-size: 30px;
