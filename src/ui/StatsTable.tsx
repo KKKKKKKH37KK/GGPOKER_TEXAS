@@ -128,12 +128,14 @@ export function StatsTable({ r, settings, evReady }: { r: StatsResult; settings:
             <ResultRow label="All-in EV" title={RESULT_DEFS.allInEv} dot="ev">
               {evReady ? (
                 <>
-                  {signed(r.evNetBB, 1)} bb <span className="muted">· </span>
-                  <Bb100 v={r.evBb100} se={r.evBb100Se} /> <span className="muted">bb/100 · {r.evHands} 手 all-in</span>
+                  {signed(r.evNetBB, 1)} bb <span className="muted">（{r.evHands} 手 all-in）</span>
                 </>
               ) : (
                 <span className="muted">計算中…</span>
               )}
+            </ResultRow>
+            <ResultRow label="EV bb/100" title={`${RESULT_DEFS.allInEv}；± 為 95% 信賴區間`}>
+              {evReady ? <Bb100 v={r.evBb100} se={r.evBb100Se} /> : '—'}
             </ResultRow>
             <ResultRow label="Luck" title="實際盈虧 − All-in EV（正 = 運氣好）">
               {evReady ? <span className={tone(r.netBB - r.evNetBB)}>{signed(r.netBB - r.evNetBB, 1)} bb</span> : '—'}

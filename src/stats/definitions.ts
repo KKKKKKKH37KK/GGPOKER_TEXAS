@@ -113,6 +113,7 @@ export const GLOSSARY: Record<string, string> = {
   Showdown: '攤牌盈虧',
   'Non-showdown': '非攤牌盈虧',
   'All-in EV': 'All-in 期望值',
+  'EV bb/100': '期望值每百手',
   Luck: '運氣（實際 − EV）',
   AF: '翻後侵略因子',
   walks: '大盲白拿',

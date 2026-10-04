@@ -292,7 +292,7 @@ input {
 }
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
   gap: 12px;
   align-items: start;
 }
@@ -377,9 +377,20 @@ table.warn-table td {
   font-weight: 400;
 }
 th[scope='row'] .term {
-  flex-direction: row;
-  align-items: baseline;
-  gap: 6px;
+  display: inline;
+}
+.term-en {
+  white-space: nowrap;
+}
+th[scope='row'] .term-zh {
+  margin-left: 6px;
+}
+table.stats th[scope='row'] {
+  white-space: normal;
+}
+/* Safety net: a card never spills over its neighbour; wide content scrolls inside it. */
+.card {
+  overflow-x: auto;
 }
 .bb100 .ci {
   font-size: 11px;
@@ -534,6 +545,13 @@ th[scope='row'] .term {
 }
 
 @media (max-width: 600px) {
+  .card {
+    padding: 10px 8px;
+  }
+  table.stats th,
+  table.stats td {
+    padding: 4px 4px;
+  }
   .kpis {
     grid-template-columns: repeat(2, 1fr);
   }
