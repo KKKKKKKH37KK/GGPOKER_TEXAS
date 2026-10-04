@@ -5,6 +5,13 @@ export type PotType = 'UNOPENED' | 'SRP' | '3BP' | '4BP+';
 export type StackGroup = 'S100' | 'S150' | 'S200';
 export type SplitKey = 'IP' | 'OOP' | 'SRP' | '3BP' | '4BP+' | 'HU' | 'MW';
 
+export interface RakeShares {
+  rakeContrib: number;
+  jackpotContrib: number;
+  takeWon: number;
+  cashDropWon: number;
+}
+
 export interface Ratio {
   num: number;
   den: number;
@@ -40,6 +47,8 @@ export interface HandFacts {
   folds: number;
   wtsd: boolean;
   netCents: number;
+  /** Hero's share of rake / jackpot fees and Cash Drop, fractional cents (see rakeShares) */
+  rake: RakeShares;
   /** All-in EV net (cents) when §5.5 applies, else undefined */
   evNetCents?: number;
 }
@@ -101,6 +110,9 @@ export interface StatsResult {
   evBb100: number | null;
   evBb100Se: number | null;
   evHands: number;
+  /** Σ of Hero's rake shares, in bb */
+  rakeBB: RakeShares;
+  rakeCents: RakeShares;
   stats: Record<StatKey, Ratio>;
   af: Ratio;
   splits: Partial<Record<StatKey, Record<SplitKey, Ratio>>>;

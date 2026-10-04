@@ -154,6 +154,16 @@ describe.skipIf(!hasZip)('golden values (PRD §7)', () => {
     expect(row.stats.sawFlop.num).toBe(sawFlop);
   });
 
+  it('rake shares (heroNet is already after rake)', () => {
+    const c = r.rakeCents;
+    expect(Math.round(c.rakeContrib)).toBe(4903);
+    expect(Math.round(c.jackpotContrib)).toBe(1304);
+    expect(Math.round(c.takeWon)).toBe(5765);
+    // pre-rake bb/100 = (net + rake + jackpot) / hands × 100
+    const pre = ((r.netBB + r.rakeBB.rakeContrib + r.rakeBB.jackpotContrib) / r.hands) * 100;
+    expect(pre.toFixed(2)).toBe('3.95');
+  });
+
   it('bb/100 standard error (per-hand SD ≈ 8.05 bb)', () => {
     expect(r.bb100Se!.toFixed(2)).toBe('9.07');
   });

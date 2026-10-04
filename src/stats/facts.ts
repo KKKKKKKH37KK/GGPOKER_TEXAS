@@ -38,11 +38,33 @@ export function effectiveStack(hand: Hand, sawFlop: boolean): number {
   return Math.min(hero.stack, deepest || hero.stack);
 }
 
+/**
+ * Hero's share of the house take, in (fractional) cents, by two common attribution methods:
+ * - contributed: each fee split by share of money invested (how most sites compute rakeback)
+ * - won: fees deducted from the pots Hero collected, split by share of the collection
+ * plus Hero's share of promotional Cash Drop money.
+ */
+export function rakeShares(hand: Hand, invested: Record<string, number>) {
+  const s = hand.summary;
+  const jackpot = s.jackpot + s.bingo + s.fortune + s.tax;
+  const totalInv = Object.values(invested).reduce((a, b) => a + b, 0);
+  const invShare = totalInv > 0 ? (invested[HERO] ?? 0) / totalInv : 0;
+  const totalCol = Object.values(hand.collected).reduce((a, b) => a + b, 0);
+  const colShare = totalCol > 0 ? (hand.collected[HERO] ?? 0) / totalCol : 0;
+  return {
+    rakeContrib: s.rake * invShare,
+    jackpotContrib: jackpot * invShare,
+    takeWon: (s.rake + jackpot) * colShare,
+    cashDropWon: hand.cashDrop * colShare,
+  };
+}
+
 export function analyzeHand(hand: Hand): HandFacts {
   const heroSeat = hand.players.find((p) => p.name === HERO);
   if (!heroSeat) throw new Error(`${hand.id}: Hero not seated`);
   const pre = analyzePreflop(hand, heroSeat.position);
   const post = analyzePostflop(hand, pre.pfa, pre.heroFolded, pre.walk);
+  const invested = computeInvested(hand);
   return {
     id: hand.id,
     timestamp: hand.timestamp,
@@ -60,6 +82,7 @@ export function analyzeHand(hand: Hand): HandFacts {
     calls: post.calls,
     folds: post.folds,
     wtsd: post.wtsd,
-    netCents: heroNet(hand, computeInvested(hand)),
+    netCents: heroNet(hand, invested),
+    rake: rakeShares(hand, invested),
   };
 }

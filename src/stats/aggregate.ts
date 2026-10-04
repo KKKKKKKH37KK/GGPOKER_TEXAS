@@ -169,6 +169,24 @@ export function aggregate(all: HandFacts[], filter: Filter = {}, bounds: StackBo
     evBb100: evWr.bb100,
     evBb100Se: evWr.se,
     evHands: evFacts.length,
+    rakeBB: facts.reduce(
+      (a, f) => ({
+        rakeContrib: a.rakeContrib + f.rake.rakeContrib / f.bb,
+        jackpotContrib: a.jackpotContrib + f.rake.jackpotContrib / f.bb,
+        takeWon: a.takeWon + f.rake.takeWon / f.bb,
+        cashDropWon: a.cashDropWon + f.rake.cashDropWon / f.bb,
+      }),
+      { rakeContrib: 0, jackpotContrib: 0, takeWon: 0, cashDropWon: 0 },
+    ),
+    rakeCents: facts.reduce(
+      (a, f) => ({
+        rakeContrib: a.rakeContrib + f.rake.rakeContrib,
+        jackpotContrib: a.jackpotContrib + f.rake.jackpotContrib,
+        takeWon: a.takeWon + f.rake.takeWon,
+        cashDropWon: a.cashDropWon + f.rake.cashDropWon,
+      }),
+      { rakeContrib: 0, jackpotContrib: 0, takeWon: 0, cashDropWon: 0 },
+    ),
     stats,
     af: { num: aggr, den: calls },
     splits: splitsOf(facts),

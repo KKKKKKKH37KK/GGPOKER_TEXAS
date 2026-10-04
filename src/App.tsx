@@ -10,6 +10,7 @@ import { Filters, stackLabel } from './ui/Filters';
 import { dollars, int } from './ui/format';
 import { GroupTable } from './ui/GroupTable';
 import { KpiCards } from './ui/KpiCards';
+import { RakeCard } from './ui/RakeCard';
 import { RangeGrid } from './ui/RangeGrid';
 import { SettingsPanel } from './ui/SettingsPanel';
 import { useSettings } from './ui/settings';
@@ -138,6 +139,7 @@ export default function App() {
               <KpiCards r={result} settings={settings} evReady={!!ev} />
               <WinGraph data={result.graph} evReady={!!ev} />
               <StatsTable r={result} settings={settings} evReady={!!ev} />
+              <RakeCard r={result} settings={settings} onRakeback={(pct) => setSettings({ ...settings, rakebackPct: pct })} />
               <GroupTable
                 title="依位置"
                 note="參考範圍依位置差異很大，此表只對 RFI 標色（用各位置的 RFI 範圍）"

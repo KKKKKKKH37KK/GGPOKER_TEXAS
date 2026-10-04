@@ -15,17 +15,19 @@ export interface Settings {
   bounds: StackBounds;
   /** User overrides of the reference ranges (F14); keys not present fall back to the built-in defaults */
   benchmarks: Partial<Record<BenchKey, Benchmark>>;
+  /** Rakeback percentage for the estimate in the rake card (0–100) */
+  rakebackPct: number;
 }
 
 const KEY = 'hh-stats-viewer.settings.v1';
-const DEFAULTS: Settings = { bounds: DEFAULT_BOUNDS, benchmarks: {} };
+const DEFAULTS: Settings = { bounds: DEFAULT_BOUNDS, benchmarks: {}, rakebackPct: 0 };
 
 function read(): Settings {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return DEFAULTS;
     const s = JSON.parse(raw) as Partial<Settings>;
-    return { bounds: { ...DEFAULTS.bounds, ...s.bounds }, benchmarks: s.benchmarks ?? {} };
+    return { bounds: { ...DEFAULTS.bounds, ...s.bounds }, benchmarks: s.benchmarks ?? {}, rakebackPct: s.rakebackPct ?? 0 };
   } catch {
     return DEFAULTS;
   }
