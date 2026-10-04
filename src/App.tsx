@@ -15,6 +15,9 @@ import { dollars, int } from './ui/format';
 import { GroupTable } from './ui/GroupTable';
 import { KpiCards } from './ui/KpiCards';
 import { LinesTable } from './ui/LinesTable';
+import { DiagnosisCard } from './ui/DiagnosisCard';
+import { DEFAULT_MIN_OPP, diagnose } from './stats/diagnose';
+import { benchFor } from './ui/settings';
 import { RakeCard } from './ui/RakeCard';
 import { RangeGrid } from './ui/RangeGrid';
 import { SettingsPanel } from './ui/SettingsPanel';
@@ -154,6 +157,13 @@ export default function App() {
     [facts, ev],
   );
   const result = useMemo(() => (withEv ? aggregate(withEv, filter, settings.bounds) : null), [withEv, filter, settings.bounds]);
+  const diagnosis = useMemo(
+    () =>
+      result
+        ? diagnose(result, { minHands: settings.minHands, minOpp: DEFAULT_MIN_OPP, rangeOf: (k) => benchFor(settings, k) })
+        : null,
+    [result, settings],
+  );
   const dateRange = useMemo<[string, string]>(
     () => (facts?.length ? [facts[0].timestamp.slice(0, 10), facts[facts.length - 1].timestamp.slice(0, 10)] : ['', '']),
     [facts],
@@ -236,6 +246,7 @@ export default function App() {
           ) : (
             <>
               <KpiCards r={result} settings={settings} evReady={!!ev} onDrill={setDrill} />
+              {diagnosis && <DiagnosisCard d={diagnosis} onDrill={setDrill} onOpenSettings={() => setShowSettings(true)} />}
               <WinGraph data={result.graph} evReady={!!ev} />
               <StatsTable r={result} settings={settings} evReady={!!ev} onDrill={setDrill} />
               <LinesTable r={result} onDrill={setDrill} />

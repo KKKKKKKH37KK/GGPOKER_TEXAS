@@ -757,3 +757,67 @@ label.check {
   color: var(--text);
   font-weight: 600;
 }
+
+/* Play review */
+.diag-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr));
+  gap: 16px;
+}
+.findings {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 10px;
+}
+ul.findings {
+  list-style: none;
+  padding-left: 0;
+}
+.finding {
+  line-height: 1.5;
+}
+.finding.leak {
+  padding-left: 2px;
+}
+ul.findings .finding {
+  border-left: 3px solid var(--border);
+  padding-left: 10px;
+}
+ul.findings .finding.strength {
+  border-left-color: var(--pos);
+}
+ul.findings .finding.watch {
+  border-left-color: var(--c-ev);
+}
+.findings.compact {
+  gap: 6px;
+  font-size: 13px;
+}
+.finding-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.finding-ev {
+  color: var(--muted);
+  font-size: 12px;
+}
+.finding-why {
+  font-size: 13px;
+}
+.finding-fix {
+  font-size: 13px;
+  margin-top: 2px;
+}
+.fix-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 0 5px;
+  margin-right: 4px;
+}

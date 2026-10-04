@@ -46,6 +46,22 @@ export function SettingsPanel({ settings, onChange, onClose }: Props) {
           檔案只存在這個瀏覽器（IndexedDB），不會上傳到任何地方。關閉這個選項會立即刪除已保存的檔案；共用電腦建議關閉。
         </p>
 
+        <h3>打法診斷</h3>
+        <div className="bounds">
+          <label>
+            至少
+            <input
+              type="number"
+              min={500}
+              step={500}
+              value={settings.minHands}
+              onChange={(e) => onChange({ ...settings, minHands: Math.max(0, Number(e.target.value) || 0) })}
+            />
+            手才分析
+          </label>
+          <span className="muted small">每條規則另外要求該統計至少 100 次機會；建議不要低於 3,000 手</span>
+        </div>
+
         <h3>籌碼深度分組（bb）</h3>
         <div className="bounds">
           <label>

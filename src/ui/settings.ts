@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { DEFAULT_BOUNDS } from '../stats/aggregate';
+import { DEFAULT_MIN_HANDS } from '../stats/diagnose';
 import { AF_DEF, STAT_DEFS, type StatKey } from '../stats/definitions';
 import type { Ratio, StackBounds } from '../stats/types';
 import { pctValue, wilson } from './format';
@@ -19,17 +20,19 @@ export interface Settings {
   rakebackPct: number;
   /** Keep uploaded files in this browser (IndexedDB) so the data is there next time */
   persist: boolean;
+  /** Play review only runs at or above this many hands */
+  minHands: number;
 }
 
 const KEY = 'hh-stats-viewer.settings.v1';
-const DEFAULTS: Settings = { bounds: DEFAULT_BOUNDS, benchmarks: {}, rakebackPct: 0, persist: true };
+const DEFAULTS: Settings = { bounds: DEFAULT_BOUNDS, benchmarks: {}, rakebackPct: 0, persist: true, minHands: DEFAULT_MIN_HANDS };
 
 function read(): Settings {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return DEFAULTS;
     const s = JSON.parse(raw) as Partial<Settings>;
-    return { bounds: { ...DEFAULTS.bounds, ...s.bounds }, benchmarks: s.benchmarks ?? {}, rakebackPct: s.rakebackPct ?? 0, persist: s.persist ?? true };
+    return { bounds: { ...DEFAULTS.bounds, ...s.bounds }, benchmarks: s.benchmarks ?? {}, rakebackPct: s.rakebackPct ?? 0, persist: s.persist ?? true, minHands: s.minHands ?? DEFAULT_MIN_HANDS };
   } catch {
     return DEFAULTS;
   }
