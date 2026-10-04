@@ -5,6 +5,8 @@ hh/
 raw/
 # Personal spec with real results — kept local only
 PRD.md
+# Claude Code project config (subagent prompts describe personal stakes/style)
+.claude/
 
 node_modules/
 dist/
