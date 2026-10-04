@@ -15,6 +15,7 @@ import { dollars, int } from './ui/format';
 import { GroupTable } from './ui/GroupTable';
 import { KpiCards } from './ui/KpiCards';
 import { LinesTable } from './ui/LinesTable';
+import { LuckCard } from './ui/LuckMeter';
 import { DiagnosisCard } from './ui/DiagnosisCard';
 import { DEFAULT_MIN_OPP, diagnose } from './stats/diagnose';
 import { benchFor } from './ui/settings';
@@ -249,6 +250,7 @@ export default function App() {
           ) : (
             <>
               <KpiCards r={result} settings={settings} evReady={!!ev} onDrill={setDrill} />
+              <LuckCard luck={result.luck} evReady={!!ev} />
               {diagnosis && <DiagnosisCard d={diagnosis} onDrill={setDrill} onOpenSettings={() => setShowSettings(true)} />}
               <WinGraph data={result.graph} evReady={!!ev} />
               <StatsTable r={result} settings={settings} evReady={!!ev} onDrill={setDrill} />

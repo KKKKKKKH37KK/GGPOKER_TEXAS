@@ -823,8 +823,14 @@ ul.findings .finding.watch {
 }
 
 /* Luck meter */
-.kpi-wide {
-  grid-column: span 2;
+.luck-card .luck-meter {
+  max-width: 520px;
+}
+.luck-card .luck-step .luck-icon {
+  font-size: 30px;
+}
+.luck-card .luck-label {
+  font-size: 13px;
 }
 .luck-steps {
   display: grid;
@@ -854,12 +860,5 @@ ul.findings .finding.watch {
 .luck-label {
   font-size: 11px;
 }
-.luck-inline {
-  margin-left: 6px;
-  font-size: 12px;
-}
-@media (max-width: 600px) {
-  .kpi-wide {
-    grid-column: span 2;
-  }
-}
+
+

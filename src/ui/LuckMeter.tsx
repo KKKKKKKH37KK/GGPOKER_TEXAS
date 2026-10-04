@@ -12,22 +12,21 @@ function describe(l: Luck): string {
   return `z = ${signed(l.z, 2)}：所有可能的發牌結果中，約 ${worse}% 比這次更倒楣、${100 - worse}% 比這次更幸運`;
 }
 
+/** Standalone card: the luck meter alone, nothing else beside it. */
+export function LuckCard({ luck, evReady }: { luck: Luck; evReady: boolean }) {
+  return (
+    <section className="card luck-card">
+      <h2>
+        運氣等級
+      </h2>
+      {evReady ? <LuckMeter luck={luck} /> : <p className="muted">All-in EV 計算中…</p>}
+    </section>
+  );
+}
+
 /** Five-level luck meter with weather icons. */
-export function LuckMeter({ luck, compact }: { luck: Luck; compact?: boolean }) {
+export function LuckMeter({ luck }: { luck: Luck }) {
   const title = `${LUCK_HELP}\n\n${luck.n} 手 all-in · 運氣 ${signed(luck.luckBB, 1)} bb · 預期波動 ±${luck.sdBB.toFixed(1)} bb\n${describe(luck)}`;
-  if (compact) {
-    return (
-      <span className="luck-inline" title={title}>
-        {luck.grade ? (
-          <>
-            <span className="luck-icon">{luck.grade.icon}</span> {luck.grade.label}
-          </>
-        ) : (
-          <span className="muted">樣本不足</span>
-        )}
-      </span>
-    );
-  }
   return (
     <div className="luck-meter" title={title}>
       <div className="luck-steps" role="img" aria-label={luck.grade ? `運氣${luck.grade.label}` : '運氣樣本不足'}>
@@ -38,9 +37,7 @@ export function LuckMeter({ luck, compact }: { luck: Luck; compact?: boolean }) 
           </span>
         ))}
       </div>
-      <div className="kpi-sub">
-        {luck.grade ? `${signed(luck.luckBB, 1)} bb / ±${luck.sdBB.toFixed(0)} bb · z ${signed(luck.z!, 2)} · ${luck.n} 手 all-in` : describe(luck)}
-      </div>
+      {!luck.grade && <div className="kpi-sub">{describe(luck)}</div>}
     </div>
   );
 }
