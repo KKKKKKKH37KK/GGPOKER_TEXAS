@@ -54,7 +54,7 @@ export function Upload({ onFiles, busy, progress, compact }: Props) {
         }}
       />
       {compact ? (
-        <span>拖入新的 .zip / .txt，或點此選擇</span>
+        <span>拖入更多 .zip / .txt，或點此選擇（會和目前資料合併，重複的手牌自動去除）</span>
       ) : (
         <>
           <div className="drop-title">拖入 GG PokerCraft 匯出的 .zip</div>

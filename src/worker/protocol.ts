@@ -8,12 +8,20 @@ export interface InputFile {
 }
 
 export type ToWorker =
-  | { type: 'load'; files: InputFile[] }
+  | { type: 'restore' }
+  | { type: 'load'; files: InputFile[]; persist: boolean }
+  | { type: 'clear' }
+  | { type: 'setPersist'; persist: boolean }
   | { type: 'exportHands'; ids: string[] | null }
   | { type: 'getReplay'; id: string };
 
 export interface LoadSummary {
+  /** .txt hand-history files parsed (after unzipping) */
   fileCount: number;
+  /** Uploaded source files (zip / txt) in the current data set */
+  sourceFiles: { name: string; addedAt: string; bytes: number }[];
+  /** How many of them were added by the latest upload */
+  newFiles: number;
   skipped: Record<string, number>;
   errorCount: number;
   duplicates: number;
@@ -29,4 +37,6 @@ export type FromWorker =
   | { type: 'ev'; ev: Record<string, number>; elapsedMs: number }
   | { type: 'exported'; json: string }
   | { type: 'replay'; id: string; replay: Replay | null }
+  | { type: 'empty' }
+  | { type: 'cleared' }
   | { type: 'error'; message: string };

@@ -37,6 +37,15 @@ export function SettingsPanel({ settings, onChange, onClose }: Props) {
           </button>
         </header>
 
+        <h3>資料保存</h3>
+        <label className="check">
+          <input type="checkbox" checked={settings.persist} onChange={(e) => onChange({ ...settings, persist: e.target.checked })} />
+          在這台電腦的瀏覽器保存上傳的檔案，下次打開自動載入
+        </label>
+        <p className="muted small">
+          檔案只存在這個瀏覽器（IndexedDB），不會上傳到任何地方。關閉這個選項會立即刪除已保存的檔案；共用電腦建議關閉。
+        </p>
+
         <h3>籌碼深度分組（bb）</h3>
         <div className="bounds">
           <label>

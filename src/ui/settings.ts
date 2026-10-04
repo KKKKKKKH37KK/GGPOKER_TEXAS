@@ -17,17 +17,19 @@ export interface Settings {
   benchmarks: Partial<Record<BenchKey, Benchmark>>;
   /** Rakeback percentage for the estimate in the rake card (0–100) */
   rakebackPct: number;
+  /** Keep uploaded files in this browser (IndexedDB) so the data is there next time */
+  persist: boolean;
 }
 
 const KEY = 'hh-stats-viewer.settings.v1';
-const DEFAULTS: Settings = { bounds: DEFAULT_BOUNDS, benchmarks: {}, rakebackPct: 0 };
+const DEFAULTS: Settings = { bounds: DEFAULT_BOUNDS, benchmarks: {}, rakebackPct: 0, persist: true };
 
 function read(): Settings {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return DEFAULTS;
     const s = JSON.parse(raw) as Partial<Settings>;
-    return { bounds: { ...DEFAULTS.bounds, ...s.bounds }, benchmarks: s.benchmarks ?? {}, rakebackPct: s.rakebackPct ?? 0 };
+    return { bounds: { ...DEFAULTS.bounds, ...s.bounds }, benchmarks: s.benchmarks ?? {}, rakebackPct: s.rakebackPct ?? 0, persist: s.persist ?? true };
   } catch {
     return DEFAULTS;
   }

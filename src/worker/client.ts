@@ -9,8 +9,17 @@ export function createStatsWorker(listener: Listener) {
   worker.onerror = (e) => listener({ type: 'error', message: e.message || 'Worker error' });
   const send = (msg: ToWorker, transfer: Transferable[] = []) => worker.postMessage(msg, transfer);
   return {
-    load(files: InputFile[]) {
-      send({ type: 'load', files }, files.map((f) => f.data));
+    restore() {
+      send({ type: 'restore' });
+    },
+    load(files: InputFile[], persist: boolean) {
+      send({ type: 'load', files, persist }, files.map((f) => f.data));
+    },
+    clear() {
+      send({ type: 'clear' });
+    },
+    setPersist(persist: boolean) {
+      send({ type: 'setPersist', persist });
     },
     exportHands(ids: string[] | null) {
       send({ type: 'exportHands', ids });

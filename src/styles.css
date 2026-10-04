@@ -732,3 +732,15 @@ tr.hero-row td {
 table.lines thead th:first-child {
   text-align: left;
 }
+
+.notice {
+  background: var(--accent-soft);
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin: -4px 0 12px;
+}
+label.check {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}

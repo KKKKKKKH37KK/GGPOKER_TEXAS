@@ -52,6 +52,8 @@ export default function App() {
   const [replayNav, setReplayNav] = useState<{ ids: string[]; index: number } | null>(null);
   const [replay, setReplay] = useState<Replay | null>(null);
   const [search, setSearch] = useState('');
+  const [notice, setNotice] = useState<string | null>(null);
+  const uploadingRef = useRef(false);
   const workerRef = useRef<ReturnType<typeof createStatsWorker> | null>(null);
 
   useEffect(() => {
@@ -61,6 +63,17 @@ export default function App() {
           setProgress({ label: `${PHASE_LABEL[msg.phase]} ${msg.done}/${msg.total}`, frac: msg.total ? msg.done / msg.total : 0 });
           break;
         case 'loaded':
+          if (uploadingRef.current) {
+            const s = msg.summary;
+            setNotice(
+              s.newFiles === 0
+                ? '這些檔案已經載入過（同檔名、同大小），沒有新增資料。'
+                : s.sourceFiles.length > s.newFiles
+                  ? `新增 ${s.newFiles} 個檔案，已和既有的 ${s.sourceFiles.length - s.newFiles} 個檔案合併${s.duplicates ? `（重複的 ${s.duplicates} 手已自動去除）` : ''}。`
+                  : null,
+            );
+            uploadingRef.current = false;
+          }
           setFacts(msg.facts);
           setSummary(msg.summary);
           setBusy(false);
@@ -72,6 +85,18 @@ export default function App() {
           break;
         case 'exported':
           download('hands.json', msg.json, 'application/json');
+          break;
+        case 'empty':
+          setBusy(false);
+          setProgress(null);
+          break;
+        case 'cleared':
+          setFacts(null);
+          setSummary(null);
+          setEv(null);
+          setFilter({});
+          setBusy(false);
+          setProgress(null);
           break;
         case 'replay':
           if (msg.replay) setReplay(msg.replay);
@@ -88,7 +113,14 @@ export default function App() {
       }
     });
     workerRef.current = w;
+    if (settings.persist) {
+      setBusy(true);
+      setProgress({ label: '載入本機保存的資料', frac: 0 });
+      w.restore();
+    }
     return () => w.terminate();
+    // Restore once on mount with the persisted setting; later toggles go through setPersist.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const load = (files: InputFile[]) => {
@@ -97,7 +129,24 @@ export default function App() {
     setError(null);
     setFilter({});
     setProgress({ label: '讀取檔案', frac: 0 });
-    workerRef.current?.load(files);
+    setNotice(null);
+    uploadingRef.current = true;
+    workerRef.current?.load(files, settings.persist);
+  };
+
+  // Turning persistence on saves what is loaded; turning it off deletes the stored copies.
+  const persistRef = useRef(settings.persist);
+  useEffect(() => {
+    if (persistRef.current === settings.persist) return;
+    persistRef.current = settings.persist;
+    workerRef.current?.setPersist(settings.persist);
+  }, [settings.persist]);
+
+  const clearData = () => {
+    const where = settings.persist ? '，也會刪除這台電腦瀏覽器裡保存的檔案' : '';
+    if (window.confirm(`清除目前載入的所有手牌資料${where}？此動作無法復原（原始 zip 檔不受影響）。`)) {
+      workerRef.current?.clear();
+    }
   };
 
   const withEv = useMemo(
@@ -144,7 +193,7 @@ export default function App() {
             {summary.duplicates > 0 && <> / 重複 {summary.duplicates} 手</>}
             <span className="muted">
               {' '}
-              · {summary.fileCount} 個檔案 · {Math.round(summary.elapsedMs)} ms
+              · {summary.sourceFiles.length} 個上傳檔（{summary.fileCount} 個 .txt）· {Math.round(summary.elapsedMs)} ms{settings.persist ? ' · 已保存在本機' : ''}
             </span>
           </div>
         )}
@@ -167,11 +216,13 @@ export default function App() {
               <button onClick={exportJson}>匯出 JSON</button>
             </>
           )}
+          {facts && <button onClick={clearData}>清除資料</button>}
           <button onClick={() => setShowSettings(true)}>設定</button>
         </div>
       </header>
 
       <Upload onFiles={load} busy={busy} progress={progress} compact={!!facts} />
+      {notice && <div className="notice">{notice}</div>}
       {error && <div className="error">{error}</div>}
 
       {result && summary && (

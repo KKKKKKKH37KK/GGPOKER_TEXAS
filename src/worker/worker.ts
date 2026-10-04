@@ -5,11 +5,14 @@ import type { Hand } from '../parser/types';
 import { heroNet } from '../stats/accounting';
 import { analyzeHand } from '../stats/facts';
 import { buildReplay } from '../stats/replay';
-import type { FromWorker, ToWorker } from './protocol';
+import type { FromWorker, InputFile, ToWorker } from './protocol';
+import { clearFiles, fileKey, getAllFiles, putFiles, type StoredFile } from './store';
 
 declare const self: DedicatedWorkerGlobalScope;
 
 let hands: Hand[] = [];
+/** Every source file currently loaded (also persisted to IndexedDB when enabled) */
+let files: StoredFile[] = [];
 let loadToken = 0;
 
 const post = (msg: FromWorker) => self.postMessage(msg);
@@ -17,8 +20,18 @@ const post = (msg: FromWorker) => self.postMessage(msg);
 self.onmessage = async (e: MessageEvent<ToWorker>) => {
   const msg = e.data;
   try {
-    if (msg.type === 'load') await load(msg.files);
-    else if (msg.type === 'getReplay') {
+    if (msg.type === 'restore') await restore();
+    else if (msg.type === 'load') await add(msg.files, msg.persist);
+    else if (msg.type === 'clear') {
+      loadToken++;
+      files = [];
+      hands = [];
+      await clearFiles();
+      post({ type: 'cleared' });
+    } else if (msg.type === 'setPersist') {
+      if (msg.persist) await putFiles(files);
+      else await clearFiles();
+    } else if (msg.type === 'getReplay') {
       const hand = hands.find((h) => h.id === msg.id);
       post({ type: 'replay', id: msg.id, replay: hand ? buildReplay(hand) : null });
     } else if (msg.type === 'exportHands') {
@@ -30,7 +43,33 @@ self.onmessage = async (e: MessageEvent<ToWorker>) => {
   }
 };
 
-async function load(files: { name: string; data: ArrayBuffer }[]) {
+async function restore() {
+  const stored = await getAllFiles();
+  if (stored.length === 0) {
+    post({ type: 'empty' });
+    return;
+  }
+  files = stored.sort((a, b) => (a.addedAt < b.addedAt ? -1 : 1));
+  await analyze(0);
+}
+
+/** Merges new uploads into the current set (same name + size = same export, skipped) and re-analyses everything. */
+async function add(incoming: InputFile[], persist: boolean) {
+  const known = new Set(files.map((f) => f.key));
+  const now = new Date().toISOString();
+  const fresh: StoredFile[] = [];
+  for (const f of incoming) {
+    const key = fileKey(f.name, f.data);
+    if (known.has(key)) continue;
+    known.add(key);
+    fresh.push({ key, name: f.name, data: f.data, addedAt: now });
+  }
+  files = [...files, ...fresh];
+  if (persist && fresh.length) await putFiles(fresh);
+  await analyze(fresh.length);
+}
+
+async function analyze(newFiles: number) {
   const token = ++loadToken;
   const t0 = performance.now();
   const sources: SourceFile[] = [];
@@ -58,6 +97,8 @@ async function load(files: { name: string; data: ArrayBuffer }[]) {
     facts,
     summary: {
       fileCount: result.fileCount,
+      sourceFiles: files.map((f) => ({ name: f.name, addedAt: f.addedAt, bytes: f.data.byteLength })),
+      newFiles,
       skipped: result.skipped,
       errorCount: result.errorCount,
       duplicates: result.duplicates,
