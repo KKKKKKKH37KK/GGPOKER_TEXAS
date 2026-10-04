@@ -228,6 +228,9 @@ export default function App() {
       {result && summary && (
         <main>
           <Filters filter={filter} onChange={setFilter} bounds={settings.bounds} dateRange={dateRange} />
+          <p className="tip">
+            提示：點任何<b>統計數字、表格的列、起手牌格</b>，都會列出那些手牌，再點一手就能<b>逐街重播</b>（← → 切換上一手／下一手）；右上角可以用<b>手牌 ID 搜尋</b>；拖入新的 zip 會和目前資料<b>合併</b>。
+          </p>
           {result.hands === 0 ? (
             <p className="empty">篩選後沒有手牌。</p>
           ) : (

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseFiles } from '../src/parser/parseZip';
+import { parseHand } from '../src/parser/parseHand';
 import { toCents } from '../src/parser/money';
 import { checkInvariants, computeInvested, heroNet, playerNet } from '../src/stats/accounting';
 import { fixture } from './helpers';
@@ -70,6 +71,24 @@ describe('fixtures (PRD §7.4)', () => {
     expect(h.showedDown.sort()).toEqual(['183da77a', 'cacc27d1']);
     expect(checkInvariants(h)).toEqual([]);
     expect(h.warnings).toEqual([]);
+  });
+
+  it('run it three times (format seen in user data, RC4769532131)', () => {
+    const text = fs
+      .readFileSync(path.join(__dirname, 'fixtures', 'RC4772496852.txt'), 'utf8')
+      .replace('*** FIRST SHOWDOWN ***', '*** THIRD RIVER *** [Jd 9s 4s 8d] [2c]\n*** FIRST SHOWDOWN ***')
+      .replace('*** SUMMARY ***', '*** THIRD SHOWDOWN ***\n*** SUMMARY ***')
+      .replace('Hand was run two times', 'Hand was run three times')
+      .replace('SECOND Board [7h]', 'SECOND Board [7h]\nTHIRD Board [2c]');
+    const h = parseHand(text);
+    expect(h.warnings).toEqual([]);
+    expect(h.runItTwice).toBe(true);
+    expect(h.boards).toEqual([
+      ['Jd', '9s', '4s', '8d', '3d'],
+      ['Jd', '9s', '4s', '8d', '7h'],
+      ['Jd', '9s', '4s', '8d', '2c'],
+    ]);
+    expect(checkInvariants(h)).toEqual([]);
   });
 
   it('RC917476129 — Omaha is skipped and counted', () => {

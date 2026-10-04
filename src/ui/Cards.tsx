@@ -13,7 +13,7 @@ export function Cards({ cards, empty = '' }: { cards: string[] | null | undefine
       {cards.map((c, i) => {
         const s = SUIT[c[1]?.toLowerCase()] ?? { sym: c[1], cls: '' };
         return (
-          <span key={i} className={`card ${s.cls}`}>
+          <span key={i} className={`pcard ${s.cls}`}>
             {c[0] === 'T' ? '10' : c[0]}
             {s.sym}
           </span>

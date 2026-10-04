@@ -88,7 +88,7 @@ export function parseHand(text: string): Hand {
         // Present on almost every hand, even when everyone folded preflop (PRD §3.4-1): carries no meaning.
       } else {
         street = STREET_OF[name];
-        const idx = run === 'SECOND' ? 1 : 0;
+        const idx = run === 'THIRD' ? 2 : run === 'SECOND' ? 1 : 0;
         if (run) hand.runItTwice = true;
         hand.boards[idx] = cardsIn(rest);
       }

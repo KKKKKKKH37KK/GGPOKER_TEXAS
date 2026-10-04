@@ -106,14 +106,15 @@ export function HandReplay({ replay, loading, position, onPrev, onNext, onClose 
               </div>
             ))}
 
-            {replay.runItTwice && replay.boards[1] && (
-              <div className="street">
-                <div className="street-head">
-                  <b>Run it twice 第二次發牌</b>
-                  <Cards cards={replay.boards[1]} />
+            {replay.runItTwice &&
+              replay.boards.slice(1).map((b, i) => (
+                <div className="street" key={i}>
+                  <div className="street-head">
+                    <b>{i === 0 ? '第二次發牌（Run it twice）' : '第三次發牌（Run it three times）'}</b>
+                    <Cards cards={b} />
+                  </div>
                 </div>
-              </div>
-            )}
+              ))}
 
             <div className="street result">
               {replay.uncalled.map((u) => (

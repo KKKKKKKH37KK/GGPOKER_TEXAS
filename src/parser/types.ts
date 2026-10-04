@@ -36,7 +36,7 @@ export interface Hand {
   /** Hero's hole cards (2 for NLHE, 4 for PLO) */
   heroCards: string[] | null;
   actions: Action[];
-  /** One board normally; two for run-it-twice */
+  /** One board normally; two or three when run multiple times */
   boards: string[][];
   shownCards: Record<string, string[]>;
   collected: Record<string, number>;
@@ -47,6 +47,7 @@ export interface Hand {
   summary: { totalPot: number; rake: number; jackpot: number; bingo: number; fortune: number; tax: number };
   /** Players with "showed [" in the summary */
   showedDown: string[];
+  /** Run it twice or three times */
   runItTwice: boolean;
   /** Lines that no rule recognised */
   warnings: string[];
