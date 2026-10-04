@@ -1,6 +1,7 @@
 import type { Hand, Position } from '../parser/types';
 import { COMBINED, STAT_DEFS, STAT_KEYS, type StatKey } from './definitions';
 import { analyzeHand } from './facts';
+import { luckOf } from './luck';
 import type {
   Filter, GraphPoint, GridCell, GroupRow, HandFacts, LineRow, Ratio, SplitKey, StackBounds, StackGroup, StatsResult,
 } from './types';
@@ -198,6 +199,7 @@ export function aggregate(all: HandFacts[], filter: Filter = {}, bounds: StackBo
     evBb100: evWr.bb100,
     evBb100Se: evWr.se,
     evHands: evFacts.length,
+    luck: luckOf(facts),
     rakeBB: facts.reduce(
       (a, f) => ({
         rakeContrib: a.rakeContrib + f.rake.rakeContrib / f.bb,

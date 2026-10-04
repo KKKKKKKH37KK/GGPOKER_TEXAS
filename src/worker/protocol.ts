@@ -34,7 +34,7 @@ export interface LoadSummary {
 export type FromWorker =
   | { type: 'progress'; phase: 'read' | 'unzip' | 'parse' | 'stats' | 'ev'; done: number; total: number }
   | { type: 'loaded'; facts: HandFacts[]; summary: LoadSummary }
-  | { type: 'ev'; ev: Record<string, number>; evPreRake: Record<string, number>; elapsedMs: number }
+  | { type: 'ev'; ev: Record<string, number>; evPreRake: Record<string, number>; evSd: Record<string, number>; elapsedMs: number }
   | { type: 'exported'; json: string }
   | { type: 'replay'; id: string; replay: Replay | null }
   | { type: 'empty' }

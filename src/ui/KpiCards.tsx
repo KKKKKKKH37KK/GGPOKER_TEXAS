@@ -6,6 +6,7 @@ import { benchFor, type Settings } from './settings';
 import type { Drill } from './drill';
 import { defText, statDrill } from './StatsTable';
 import { Bb100, Term } from './Term';
+import { LuckMeter } from './LuckMeter';
 
 const KPI_STATS: StatKey[] = ['vpip', 'pfr', 'threeBet', 'wtsd', 'wsd'];
 
@@ -44,6 +45,12 @@ export function KpiCards({ r, settings, evReady, onDrill }: { r: StatsResult; se
             'All-in EV 計算中…'
           )}
         </div>
+      </div>
+      <div className="kpi kpi-wide">
+        <div className="kpi-label">
+          <Term en="Luck" zh="運氣等級（all-in）" />
+        </div>
+        {evReady ? <LuckMeter luck={r.luck} /> : <div className="kpi-sub">All-in EV 計算中…</div>}
       </div>
       {KPI_STATS.map((k) => (
         <div className="kpi" key={k}>

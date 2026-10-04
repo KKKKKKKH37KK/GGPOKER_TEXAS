@@ -1,5 +1,6 @@
 import type { Position } from '../parser/types';
 import type { StatKey } from './definitions';
+import type { Luck } from './luck';
 
 export type PotType = 'UNOPENED' | 'SRP' | '3BP' | '4BP+';
 export type StackGroup = 'S100' | 'S150' | 'S200';
@@ -58,6 +59,8 @@ export interface HandFacts {
   evNetCents?: number;
   /** All-in EV before rake (equity × full pot − contribution), cents */
   evPreRakeCents?: number;
+  /** SD of Hero's all-in result over possible run-outs (after rake), cents */
+  evSdCents?: number;
 }
 
 export interface StackBounds {
@@ -131,6 +134,7 @@ export interface StatsResult {
   evBb100: number | null;
   evBb100Se: number | null;
   evHands: number;
+  luck: Luck;
   /** Σ of Hero's rake shares, in bb */
   rakeBB: RakeShares;
   rakeCents: RakeShares;

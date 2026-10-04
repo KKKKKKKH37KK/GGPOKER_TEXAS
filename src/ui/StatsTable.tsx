@@ -7,6 +7,7 @@ import { RatioCell } from './RatioCell';
 import { benchFor, benchText, valueFlag, type Settings } from './settings';
 import { type Drill, statValue } from './drill';
 import { Bb100, Term } from './Term';
+import { LuckMeter } from './LuckMeter';
 
 export const defText = (k: StatKey) =>
   `${STAT_DEFS[k].label}（${STAT_DEFS[k].zh}）\n分母：${STAT_DEFS[k].den}\n分子：${STAT_DEFS[k].num}`;
@@ -155,7 +156,13 @@ export function StatsTable({ r, settings, evReady, onDrill }: { r: StatsResult; 
               {evReady ? <Bb100 v={r.evBb100} se={r.evBb100Se} /> : '—'}
             </ResultRow>
             <ResultRow label="Luck" title="實際盈虧 − All-in EV（正 = 運氣好）">
-              {evReady ? <span className={tone(r.netBB - r.evNetBB)}>{signed(r.netBB - r.evNetBB, 1)} bb</span> : '—'}
+              {evReady ? (
+                <>
+                  <span className={tone(r.netBB - r.evNetBB)}>{signed(r.netBB - r.evNetBB, 1)} bb</span> <LuckMeter luck={r.luck} compact />
+                </>
+              ) : (
+                '—'
+              )}
             </ResultRow>
           </tbody>
         </table>

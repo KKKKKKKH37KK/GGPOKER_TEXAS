@@ -30,13 +30,34 @@ export interface EquityOptions {
  * `holes[i]` are player i's hole cards; `pots[j]` lists the player indexes eligible for pot j.
  * Ties split the pot evenly among the best eligible hands.
  */
-export function potShares(
+export function potShares(hero: number, holes: number[][], board: number[], pots: number[][], opts: EquityOptions = {}): number[] {
+  return equityCore(hero, holes, board, pots, null, opts).shares;
+}
+
+/**
+ * Hero's expected share of each pot plus the mean and standard deviation of Hero's total winnings,
+ * given the pot `amounts` (same units out). The SD is what a luck z-score is measured against.
+ */
+export function potOutcome(
   hero: number,
   holes: number[][],
   board: number[],
   pots: number[][],
-  { trials = 200_000, exhaustiveMax = 100_000, seed = 1 }: EquityOptions = {},
-): number[] {
+  amounts: number[],
+  opts: EquityOptions = {},
+): { shares: number[]; mean: number; sd: number } {
+  const r = equityCore(hero, holes, board, pots, amounts, opts);
+  return { shares: r.shares, mean: r.mean, sd: Math.sqrt(Math.max(0, r.meanSq - r.mean * r.mean)) };
+}
+
+function equityCore(
+  hero: number,
+  holes: number[][],
+  board: number[],
+  pots: number[][],
+  amounts: number[] | null,
+  { trials = 200_000, exhaustiveMax = 100_000, seed = 1 }: EquityOptions,
+): { shares: number[]; mean: number; meanSq: number } {
   const dead = new Set<number>([...board, ...holes.flat()]);
   const deck: number[] = [];
   for (let c = 0; c < 52; c++) if (!dead.has(c)) deck.push(c);
@@ -51,6 +72,8 @@ export function potShares(
   });
   const scores = new Int32Array(n);
   const shares = new Float64Array(pots.length);
+  let sumWin = 0;
+  let sumWinSq = 0;
   const start = 2 + board.length;
 
   const score = (runout: ArrayLike<number>) => {
@@ -58,6 +81,7 @@ export function potShares(
       for (let k = 0; k < need; k++) hands[i][start + k] = runout[k];
       scores[i] = evaluate(hands[i], 7);
     }
+    let win = 0;
     for (let j = 0; j < pots.length; j++) {
       const elig = pots[j];
       if (!elig.includes(hero)) continue;
@@ -69,8 +93,13 @@ export function potShares(
           ties = 1;
         } else if (scores[p] === best) ties++;
       }
-      if (scores[hero] === best) shares[j] += 1 / ties;
+      if (scores[hero] === best) {
+        shares[j] += 1 / ties;
+        if (amounts) win += amounts[j] / ties;
+      }
     }
+    sumWin += win;
+    sumWinSq += win * win;
   };
 
   const combos = binom(deck.length, need);
@@ -106,7 +135,7 @@ export function potShares(
     }
     runs = trials;
   }
-  return Array.from(shares, (s) => s / runs);
+  return { shares: Array.from(shares, (s) => s / runs), mean: sumWin / runs, meanSq: sumWinSq / runs };
 }
 
 function binom(n: number, k: number): number {

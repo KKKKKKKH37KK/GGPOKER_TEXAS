@@ -1,7 +1,7 @@
 import { HERO, type Hand, type Street } from '../parser/types';
 import { computeInvested } from '../stats/accounting';
 import { cardToInt } from './evaluator';
-import { hashSeed, potShares, type EquityOptions } from './equity';
+import { hashSeed, potOutcome, type EquityOptions } from './equity';
 
 const BOARD_LEN: Record<Street, number> = { PRE: 0, FLOP: 3, TURN: 4, RIVER: 5 };
 
@@ -39,7 +39,7 @@ export function allInEvNet(hand: Hand, opts: EquityOptions = {}): number | null 
  * Equity-based result in cents: `net` after the house take (proportional), `preRakeNet` before it
  * (equity × full pot − contribution, the way GG PokerCraft charts it).
  */
-export function allInEv(hand: Hand, opts: EquityOptions = {}): { net: number; preRakeNet: number } | null {
+export function allInEv(hand: Hand, opts: EquityOptions = {}): { net: number; preRakeNet: number; sd: number } | null {
   const spot = findAllInSpot(hand);
   if (!spot) return null;
   const invested = computeInvested(hand);
@@ -62,14 +62,15 @@ export function allInEv(hand: Hand, opts: EquityOptions = {}): { net: number; pr
 
   const holes = spot.live.map((p) => (p === HERO ? hand.heroCards! : hand.shownCards[p]).map(cardToInt));
   const heroIdx = spot.live.indexOf(HERO);
-  const shares = potShares(
+  const o = potOutcome(
     heroIdx,
     holes,
     spot.board.map(cardToInt),
     pots.map((pot) => pot.eligible.map((p) => spot.live.indexOf(p))),
+    pots.map((pot) => pot.amount),
     { seed: hashSeed(hand.id), ...opts },
   );
-  const gross = pots.reduce((acc, pot, j) => acc + pot.amount * shares[j], 0);
   const mine = invested[HERO] ?? 0;
-  return { net: gross * (1 - takeRate) - mine, preRakeNet: gross - mine };
+  // sd: spread of Hero's after-rake result over all possible run-outs (cents) — the yardstick for luck.
+  return { net: o.mean * (1 - takeRate) - mine, preRakeNet: o.mean - mine, sd: o.sd * (1 - takeRate) };
 }

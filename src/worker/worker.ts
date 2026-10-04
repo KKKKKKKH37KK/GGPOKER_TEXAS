@@ -112,11 +112,13 @@ async function analyze(newFiles: number) {
   const t1 = performance.now();
   const ev: Record<string, number> = {};
   const evPreRake: Record<string, number> = {};
+  const evSd: Record<string, number> = {};
   for (let i = 0; i < hands.length; i++) {
     const v = allInEv(hands[i]);
     if (v !== null) {
       ev[hands[i].id] = v.net;
       evPreRake[hands[i].id] = v.preRakeNet;
+      evSd[hands[i].id] = v.sd;
     }
     if (i % 2000 === 0) {
       post({ type: 'progress', phase: 'ev', done: i, total: hands.length });
@@ -124,5 +126,5 @@ async function analyze(newFiles: number) {
       if (token !== loadToken) return;
     }
   }
-  post({ type: 'ev', ev, evPreRake, elapsedMs: performance.now() - t1 });
+  post({ type: 'ev', ev, evPreRake, evSd, elapsedMs: performance.now() - t1 });
 }
