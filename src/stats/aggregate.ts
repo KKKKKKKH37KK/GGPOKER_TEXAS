@@ -7,12 +7,13 @@ import type {
 
 export const POSITIONS: Position[] = ['UTG', 'HJ', 'CO', 'BTN', 'SB', 'BB'];
 export const STACK_GROUPS: StackGroup[] = ['S100', 'S150', 'S200'];
-export const DEFAULT_BOUNDS: StackBounds = { low: 125, high: 175 };
+export const DEFAULT_BOUNDS: StackBounds = { low: 125, high: 175, basis: 'effective' };
 const SPLIT_KEYS: SplitKey[] = ['IP', 'OOP', 'SRP', '3BP', '4BP+', 'HU', 'MW'];
 const MAX_GRAPH_POINTS = 2000;
 
-export function stackGroup(stackBB: number, b: StackBounds = DEFAULT_BOUNDS): StackGroup {
-  return stackBB <= b.low ? 'S100' : stackBB <= b.high ? 'S150' : 'S200';
+export function stackGroup(f: Pick<HandFacts, 'stackBB' | 'effStackBB'>, b: StackBounds = DEFAULT_BOUNDS): StackGroup {
+  const bb = b.basis === 'hero' ? f.stackBB : f.effStackBB;
+  return bb <= b.low ? 'S100' : bb <= b.high ? 'S150' : 'S200';
 }
 
 export function applyFilter(facts: HandFacts[], f: Filter = {}, bounds: StackBounds = DEFAULT_BOUNDS): HandFacts[] {
@@ -21,8 +22,9 @@ export function applyFilter(facts: HandFacts[], f: Filter = {}, bounds: StackBou
     if (f.dateFrom && day < f.dateFrom) return false;
     if (f.dateTo && day > f.dateTo) return false;
     if (f.positions?.length && !f.positions.includes(x.position)) return false;
-    if (f.stackGroups?.length && !f.stackGroups.includes(stackGroup(x.stackBB, bounds))) return false;
-    if (f.potTypes?.length && !f.potTypes.includes(x.potType)) return false;
+    if (f.stackGroups?.length && !f.stackGroups.includes(stackGroup(x, bounds))) return false;
+    // Pot type is only meaningful for pots Hero played: otherwise preflop stats get conditioned on the outcome.
+    if (f.potTypes?.length && (!x.sawFlop || !f.potTypes.includes(x.potType))) return false;
     return true;
   });
 }
@@ -105,7 +107,7 @@ function graphOf(facts: HandFacts[]): GraphPoint[] {
 function gridOf(facts: HandFacts[]): Record<string, GridCell> {
   const grid: Record<string, GridCell> = {};
   for (const f of facts) {
-    if (!f.combo) continue;
+    if (!f.combo || f.walk) continue; // walks have no decision: they would dilute VPIP/PFR per combo
     const c = (grid[f.combo] ??= { dealt: 0, vpip: 0, pfr: 0, netBB: 0 });
     c.dealt++;
     c.vpip += f.s.vpip ?? 0;
@@ -130,7 +132,7 @@ export function aggregate(all: HandFacts[], filter: Filter = {}, bounds: StackBo
     POSITIONS.map((p) => [p, groupRow(facts.filter((f) => f.position === p))]),
   ) as Record<Position, GroupRow>;
   const byStack = Object.fromEntries(
-    STACK_GROUPS.map((g) => [g, groupRow(facts.filter((f) => stackGroup(f.stackBB, bounds) === g))]),
+    STACK_GROUPS.map((g) => [g, groupRow(facts.filter((f) => stackGroup(f, bounds) === g))]),
   ) as Record<StackGroup, GroupRow>;
 
   return {

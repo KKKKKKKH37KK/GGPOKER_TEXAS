@@ -53,13 +53,16 @@ export function analyzePreflop(hand: Hand, heroPos: Position): PreflopResult {
   if (walk) return { walk, pfa, potType, heroFolded, s };
 
   const bit = (b: boolean): 0 | 1 => (b ? 1 : 0);
-  const is = (d: Decision | undefined, t: Action['type']) => d?.type === t;
   const first = hero[0];
 
   s.vpip = bit(hero.some((d) => d.type === 'call' || d.type === 'raise'));
   s.pfr = bit(hero.some((d) => d.type === 'raise'));
-  s.limp = bit(is(first, 'call') && first.level === 1 && heroPos !== 'BB');
-  s.coldCall = bit(is(first, 'call') && first.level === 2);
+  if (heroPos !== 'BB' && first.level === 1) {
+    s.limp = bit(first.type === 'call');
+    if (first.limpers === 0) s[`rfi${heroPos}` as StatKey] = bit(first.type === 'raise');
+  }
+  // Facing a single raise with the first decision: BB defence and true cold calls are different leaks.
+  if (first.level === 2) s[heroPos === 'BB' ? 'bbCallVsOpen' : 'coldCall'] = bit(first.type === 'call');
 
   const faceL2 = hero.find((d) => d.level === 2);
   if (faceL2) s.threeBet = bit(faceL2.type === 'raise');

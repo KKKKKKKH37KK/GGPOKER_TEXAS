@@ -31,8 +31,20 @@ export function SettingsPanel({ settings, onChange, onClose }: Props) {
           </button>
         </header>
 
-        <h3>籌碼深度分組（Hero 起始籌碼，bb）</h3>
+        <h3>籌碼深度分組（bb）</h3>
         <div className="bounds">
+          <label>
+            依據
+            <select
+              value={settings.bounds.basis ?? 'effective'}
+              onChange={(e) =>
+                onChange({ ...settings, bounds: { ...settings.bounds, basis: e.target.value as 'effective' | 'hero' } })
+              }
+            >
+              <option value="effective">有效籌碼（vs 最深對手）</option>
+              <option value="hero">Hero 起始籌碼</option>
+            </select>
+          </label>
           <label>
             100bb 組 ≤
             <input
@@ -51,7 +63,7 @@ export function SettingsPanel({ settings, onChange, onClose }: Props) {
               onChange={(e) => onChange({ ...settings, bounds: { ...settings.bounds, high: Number(e.target.value) || 0 } })}
             />
           </label>
-          <button className="link" onClick={() => onChange({ ...settings, bounds: { low: 125, high: 175 } })}>
+          <button className="link" onClick={() => onChange({ ...settings, bounds: { ...settings.bounds, low: 125, high: 175 } })}>
             還原 125 / 175
           </button>
         </div>

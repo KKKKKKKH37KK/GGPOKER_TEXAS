@@ -137,7 +137,7 @@ export default function App() {
               />
               <GroupTable
                 title="依籌碼深度"
-                note="Hero 起始籌碼"
+                note={settings.bounds.basis === 'hero' ? 'Hero 起始籌碼' : '有效籌碼（Hero vs 仍在牌局中最深的對手）'}
                 rows={STACK_GROUPS.map((g) => ({ key: g, label: stackLabel(g, settings.bounds), row: result.byStack[g] }))}
                 settings={settings}
               />

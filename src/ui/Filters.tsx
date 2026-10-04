@@ -3,7 +3,7 @@ import { POSITIONS, STACK_GROUPS } from '../stats/aggregate';
 import type { Filter, PotType, StackBounds, StackGroup } from '../stats/types';
 
 const POT_TYPES: { key: PotType; label: string }[] = [
-  { key: 'UNOPENED', label: 'Limp/Walk' },
+  { key: 'UNOPENED', label: 'Limped' },
   { key: 'SRP', label: 'SRP' },
   { key: '3BP', label: '3BP' },
   { key: '4BP+', label: '4BP+' },
@@ -71,7 +71,7 @@ export function Filters({ filter, onChange, bounds, dateRange }: Props) {
           </button>
         ))}
       </div>
-      <div className="chips" role="group" aria-label="Pot type">
+      <div className="chips" role="group" aria-label="Pot type" title="Pot type 篩選只含 Hero 看到 flop 的手（翻前統計在此篩選下沒有意義）">
         {POT_TYPES.map((t) => (
           <button
             key={t.key}

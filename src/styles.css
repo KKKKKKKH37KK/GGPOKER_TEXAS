@@ -514,3 +514,13 @@ table.warn-table td {
     display: none;
   }
 }
+
+select {
+  font: inherit;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  margin-left: 6px;
+}

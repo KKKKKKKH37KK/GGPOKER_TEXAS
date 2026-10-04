@@ -22,7 +22,11 @@ export interface HandFacts {
   timestamp: string;
   position: Position;
   bb: number;
+  /** Hero's starting stack in bb */
   stackBB: number;
+  /** Effective stack in bb (see effectiveStack) */
+  effStackBB: number;
+  sawFlop: boolean;
   /** "AKs" / "T9o" / "QQ" */
   combo: string | null;
   walk: boolean;
@@ -45,6 +49,8 @@ export interface StackBounds {
   low: number;
   /** > high → 200bb+ group */
   high: number;
+  /** Group by effective stack (default) or Hero's own starting stack */
+  basis?: 'effective' | 'hero';
 }
 
 export interface Filter {

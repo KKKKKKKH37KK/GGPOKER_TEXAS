@@ -45,7 +45,7 @@ describe.skipIf(!hasZip)('golden values (PRD §7)', () => {
   beforeAll(async () => {
     parsed = await loadZip();
     facts = parsed.hands.map(analyzeHand);
-    r = aggregate(facts);
+    r = aggregate(facts, {}, { low: 125, high: 175, basis: 'hero' });
   });
 
   it('§7.1 hands and net must match exactly', () => {
@@ -59,11 +59,21 @@ describe.skipIf(!hasZip)('golden values (PRD §7)', () => {
     expect(r.netCents + other).toBe(-3082);
   });
 
+  // 2026-10-04 definition fixes (PRD §7.1 updated with the reasons):
+  //  limp/coldCall now use opportunities as denominator, BB defence split into bbCallVsOpen;
+  //  turn/river CBet and Fold to Turn CBet stop counting once the previous street's CBet was raised.
   const ratios: [StatKey, number, number][] = [
     ['vpip', 2211, 7650],
     ['pfr', 1748, 7650],
-    ['limp', 4, 7650],
-    ['coldCall', 457, 7650],
+    ['rfi', 1394, 4156],
+    ['rfiUTG', 236, 1318],
+    ['rfiHJ', 280, 1041],
+    ['rfiCO', 297, 832],
+    ['rfiBTN', 406, 590],
+    ['rfiSB', 175, 375],
+    ['limp', 4, 4209],
+    ['coldCall', 67, 2146],
+    ['bbCallVsOpen', 390, 880],
     ['threeBet', 321, 3029],
     ['foldTo3Bet', 212, 316],
     ['call3Bet', 73, 316],
@@ -79,11 +89,11 @@ describe.skipIf(!hasZip)('golden values (PRD §7)', () => {
     ['wwsf', 520, 1138],
     ['afq', 771, 1616],
     ['flopCbet', 376, 540],
-    ['turnCbet', 75, 198],
-    ['riverCbet', 9, 28],
+    ['turnCbet', 72, 193],
+    ['riverCbet', 8, 27],
     ['foldToFlopCbet', 126, 312],
     ['raiseFlopCbet', 22, 312],
-    ['foldToTurnCbet', 48, 79],
+    ['foldToTurnCbet', 48, 77],
     ['flopCheckRaise', 15, 304],
     ['donkBet', 17, 424],
   ];
@@ -127,5 +137,34 @@ describe.skipIf(!hasZip)('golden values (PRD §7)', () => {
     expect(pct(row.stats.vpip)).toBe(vpip);
     expect(pct(row.stats.pfr)).toBe(pfr);
     expect(pct(row.stats.threeBet)).toBe(threeBet);
+  });
+
+  // Default grouping is by effective stack (Hero vs the deepest opponent still involved).
+  const byEff: [string, number, string, number, number, number][] = [
+    ['S100', 5551, '-13.25', 1793, 1391, 975],
+    ['S150', 1456, '5.95', 276, 231, 111],
+    ['S200', 873, '38.91', 142, 126, 52],
+  ];
+  it.each(byEff)('§7.3b effective %s', (g, hands, bb100, vpip, pfr, sawFlop) => {
+    const row = aggregate(facts).byStack[g as keyof StatsResult['byStack']];
+    expect(row.hands).toBe(hands);
+    expect(row.bb100!.toFixed(2)).toBe(bb100);
+    expect(row.stats.vpip.num).toBe(vpip);
+    expect(row.stats.pfr.num).toBe(pfr);
+    expect(row.stats.sawFlop.num).toBe(sawFlop);
+  });
+
+  it('pot type filter only keeps hands where Hero saw the flop', () => {
+    const srp = aggregate(facts, { potTypes: ['SRP'] });
+    expect(srp.hands).toBe(885);
+    expect(srp.stats.sawFlop).toEqual({ num: 885, den: 885 });
+  });
+
+  it('range grid excludes walks', () => {
+    const bb = aggregate(facts, { positions: ['BB'] });
+    const dealt = Object.values(bb.grid).reduce((a, c) => a + c.dealt, 0);
+    const vpip = Object.values(bb.grid).reduce((a, c) => a + c.vpip, 0);
+    expect(dealt).toBe(bb.stats.vpip.den);
+    expect(vpip).toBe(bb.stats.vpip.num);
   });
 });

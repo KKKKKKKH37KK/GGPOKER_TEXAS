@@ -93,8 +93,9 @@ export function analyzePostflop(hand: Hand, pfa: string | null, heroFoldedPre: b
       if (!prevCbet) break;
       const a = firstUnopened(st);
       if (!a) break;
-      prevCbet = a.type === 'bet';
-      record(key, prevCbet, st);
+      record(key, a.type === 'bet', st);
+      // Once the CBet is raised the initiative is gone: the next street is no longer a CBet spot.
+      prevCbet = a.type === 'bet' && !byStreet[st].some((x) => x.type === 'raise');
     }
   } else if (pfa !== null && aliveAt.FLOP?.includes(pfa)) {
     const flop = facingFirstBetBy('FLOP', pfa);
@@ -104,12 +105,13 @@ export function analyzePostflop(hand: Hand, pfa: string | null, heroFoldedPre: b
       record('callFlopCbet', t === 'call', 'FLOP');
       record('raiseFlopCbet', t === 'raise', 'FLOP');
     }
-    if (flop.cbet) {
+    if (flop.cbet && !byStreet.FLOP.some((x) => x.type === 'raise')) {
       const turn = facingFirstBetBy('TURN', pfa);
       if (turn.response) record('foldToTurnCbet', turn.response.type === 'fold', 'TURN');
     }
-    // Donk bet: Hero acts before the PFA on the flop and leads into them.
-    if ((orderOf.get(HERO) ?? 0) < (orderOf.get(pfa) ?? 0)) {
+    // Donk bet: Hero acts before the PFA on the flop and leads into them (a PFA all-in preflop cannot be donked into).
+    const pfaAllIn = byStreet.PRE.some((x) => x.player === pfa && x.allIn);
+    if (!pfaAllIn && (orderOf.get(HERO) ?? 0) < (orderOf.get(pfa) ?? 0)) {
       const a = firstUnopened('FLOP');
       if (a) s.donkBet = bit(a.type === 'bet');
     }
