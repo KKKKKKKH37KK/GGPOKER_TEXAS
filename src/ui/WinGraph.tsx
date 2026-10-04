@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { GraphPoint } from '../stats/types';
 import { int, signed } from './format';
@@ -12,13 +13,41 @@ const SERIES = [
 ] as const;
 
 /** F6 + F11: cumulative winnings in bb */
+const PREF_KEY = 'hh-stats-viewer.showPreRake';
+
+function readPref(): boolean {
+  try {
+    return localStorage.getItem(PREF_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
 export function WinGraph({ data, evReady }: { data: GraphPoint[]; evReady: boolean }) {
-  const series = evReady ? SERIES : SERIES.filter((s) => s.key !== 'ev' && s.key !== 'evPreRake');
+  // Pre-rake lines are opt-in; the choice is remembered in this browser only.
+  const [showPreRake, setShowPreRake] = useState(readPref);
+  const toggle = (on: boolean) => {
+    setShowPreRake(on);
+    try {
+      localStorage.setItem(PREF_KEY, on ? '1' : '0');
+    } catch {
+      // storage unavailable: the choice lasts for this session
+    }
+  };
+  const series = SERIES.filter(
+    (s) => (evReady || (s.key !== 'ev' && s.key !== 'evPreRake')) && (showPreRake || !('dashed' in s)),
+  );
   return (
     <section className="card">
       <h2>
         累積盈虧（bb）
-        <span className="h-note">實線已扣抽水（= 帳戶實際增減）；虛線是扣抽水前，可和 GG PokerCraft 官方圖對照</span>
+        <span className="h-note">
+          已扣抽水（= 帳戶實際增減）{showPreRake && '；虛線是扣抽水前，可和 GG PokerCraft 官方圖對照'}
+        </span>
+        <label className="check graph-toggle">
+          <input type="checkbox" checked={showPreRake} onChange={(e) => toggle(e.target.checked)} />
+          顯示扣抽水前（實際、All-in EV）
+        </label>
       </h2>
       <div className="chart">
         <ResponsiveContainer width="100%" height="100%">

@@ -867,3 +867,9 @@ ul.findings .finding.watch {
 }
 
 
+
+.graph-toggle {
+  margin-left: auto;
+  font-weight: 400;
+  font-size: 12px;
+}
