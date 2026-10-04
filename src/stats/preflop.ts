@@ -13,7 +13,47 @@ interface Decision {
   raiserPos: Position | null;
 }
 
+/**
+ * Hero's preflop action line, e.g. "Open → Fold to 3Bet", "BB call vs CO", "3Bet vs BTN → Call 4Bet".
+ * Used to split results by line (where the money is won or lost).
+ */
+function lineOf(hero: Decision[], heroPos: Position, walk: boolean): string {
+  if (walk) return 'Walk';
+  const first = hero[0];
+  if (!first) return 'Other';
+  const vs = first.raiserPos ? ` vs ${first.raiserPos}` : '';
+  const next = hero[1];
+  const reply = (lvl: number, names: [string, string, string]) => {
+    if (!next) return '';
+    if (next.level !== lvl) return ' → 面對更高加注';
+    return ` → ${next.type === 'fold' ? names[0] : next.type === 'call' ? names[1] : next.type === 'raise' ? names[2] : next.type}`;
+  };
+  switch (first.type) {
+    case 'fold':
+      return 'Fold';
+    case 'check':
+      return 'BB check（limp 底池）';
+    case 'call':
+      if (first.level === 1) return heroPos === 'SB' && first.limpers === 0 ? 'SB limp（補齊）' : 'Limp';
+      if (first.level === 2) return `${heroPos === 'BB' ? 'BB call' : 'Cold call'}${vs}${next ? ' → 再面對加注' : ''}`;
+      return first.level === 3 ? 'Cold call 3Bet' : 'Call 4Bet+';
+    case 'raise':
+      if (first.level === 1) {
+        const base = first.limpers > 0 ? 'Iso-raise' : 'Open';
+        return next ? `${base}${reply(3, ['Fold to 3Bet', 'Call 3Bet', '4Bet'])}` : `${base} → 無人 3Bet`;
+      }
+      if (first.level === 2) {
+        const base = first.callers > 0 ? `Squeeze${vs}` : `3Bet${vs}`;
+        return `${base}${reply(4, ['Fold to 4Bet', 'Call 4Bet', '5Bet'])}`;
+      }
+      return first.level === 3 ? 'Cold 4Bet' : '5Bet+';
+    default:
+      return 'Other';
+  }
+}
+
 export interface PreflopResult {
+  line: string;
   walk: boolean;
   pfa: string | null;
   potType: PotType;
@@ -50,7 +90,8 @@ export function analyzePreflop(hand: Hand, heroPos: Position): PreflopResult {
   const heroFolded = hero.some((d) => d.type === 'fold');
   const walk = heroPos === 'BB' && hero.length === 0;
   const s: Partial<Record<StatKey, 0 | 1>> = {};
-  if (walk) return { walk, pfa, potType, heroFolded, s };
+  const line = lineOf(hero, heroPos, walk);
+  if (walk) return { line, walk, pfa, potType, heroFolded, s };
 
   const bit = (b: boolean): 0 | 1 => (b ? 1 : 0);
   const first = hero[0];
@@ -101,5 +142,5 @@ export function analyzePreflop(hand: Hand, heroPos: Position): PreflopResult {
     s[heroPos === 'SB' ? 'threeBetVsStealSB' : 'threeBetVsStealBB'] = bit(first.type === 'raise');
   }
 
-  return { walk, pfa, potType, heroFolded, s };
+  return { line, walk, pfa, potType, heroFolded, s };
 }

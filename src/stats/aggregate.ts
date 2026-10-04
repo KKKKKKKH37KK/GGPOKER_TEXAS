@@ -2,7 +2,7 @@ import type { Hand, Position } from '../parser/types';
 import { COMBINED, STAT_DEFS, STAT_KEYS, type StatKey } from './definitions';
 import { analyzeHand } from './facts';
 import type {
-  Filter, GraphPoint, GridCell, GroupRow, HandFacts, Ratio, SplitKey, StackBounds, StackGroup, StatsResult,
+  Filter, GraphPoint, GridCell, GroupRow, HandFacts, LineRow, Ratio, SplitKey, StackBounds, StackGroup, StatsResult,
 } from './types';
 
 export const POSITIONS: Position[] = ['UTG', 'HJ', 'CO', 'BTN', 'SB', 'BB'];
@@ -137,6 +137,30 @@ function gridOf(facts: HandFacts[]): Record<string, GridCell> {
   return grid;
 }
 
+/** Drops the opener position ("BB call vs CO" → "BB call") for a coarser view */
+export const coarseLine = (line: string) => line.replace(/ vs (UTG|HJ|CO|BTN|SB|BB)\b/, '');
+
+function linesOf(facts: HandFacts[], key: (line: string) => string = (l) => l): LineRow[] {
+  const groups = new Map<string, HandFacts[]>();
+  for (const f of facts) {
+    const k = key(f.line);
+    const g = groups.get(k);
+    if (g) g.push(f);
+    else groups.set(k, [f]);
+  }
+  return [...groups].map(([line, fs]) => {
+    const wr = winrate(fs.map(netBBOf));
+    return {
+      line,
+      hands: fs.length,
+      netBB: fs.reduce((a, f) => a + netBBOf(f), 0),
+      perHand: (wr.bb100 ?? 0) / 100,
+      perHandSe: wr.se === null ? null : wr.se / 100,
+      evPerHand: fs.reduce((a, f) => a + evBBOf(f), 0) / fs.length,
+    };
+  }).sort((a, b) => a.netBB - b.netBB);
+}
+
 /** Aggregates precomputed facts. Cheap enough to rerun on every filter change. */
 export function aggregate(all: HandFacts[], filter: Filter = {}, bounds: StackBounds = DEFAULT_BOUNDS): StatsResult {
   const facts = applyFilter(all, filter, bounds);
@@ -194,6 +218,8 @@ export function aggregate(all: HandFacts[], filter: Filter = {}, bounds: StackBo
     byStack,
     graph: graphOf(facts),
     grid: gridOf(facts),
+    lines: linesOf(facts),
+    linesCoarse: linesOf(facts, coarseLine),
   };
 }
 

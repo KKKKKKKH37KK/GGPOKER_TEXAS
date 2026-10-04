@@ -14,6 +14,7 @@ import { HandReplay } from './ui/HandReplay';
 import { dollars, int } from './ui/format';
 import { GroupTable } from './ui/GroupTable';
 import { KpiCards } from './ui/KpiCards';
+import { LinesTable } from './ui/LinesTable';
 import { RakeCard } from './ui/RakeCard';
 import { RangeGrid } from './ui/RangeGrid';
 import { SettingsPanel } from './ui/SettingsPanel';
@@ -183,6 +184,7 @@ export default function App() {
               <KpiCards r={result} settings={settings} evReady={!!ev} onDrill={setDrill} />
               <WinGraph data={result.graph} evReady={!!ev} />
               <StatsTable r={result} settings={settings} evReady={!!ev} onDrill={setDrill} />
+              <LinesTable r={result} onDrill={setDrill} />
               <RakeCard r={result} settings={settings} onRakeback={(pct) => setSettings({ ...settings, rakebackPct: pct })} />
               <GroupTable
                 title="依位置"

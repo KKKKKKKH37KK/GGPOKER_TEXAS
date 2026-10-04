@@ -728,3 +728,7 @@ tr.hero-row td {
     grid-column: 3;
   }
 }
+
+table.lines thead th:first-child {
+  text-align: left;
+}

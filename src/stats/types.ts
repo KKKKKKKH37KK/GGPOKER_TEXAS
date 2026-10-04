@@ -40,6 +40,8 @@ export interface HandFacts {
   /** First-run board */
   board: string[];
   walk: boolean;
+  /** Hero's preflop action line (see lineOf) */
+  line: string;
   potType: PotType;
   /** Recorded ratio stats: key present = opportunity, value 1 = made */
   s: Partial<Record<StatKey, 0 | 1>>;
@@ -91,6 +93,17 @@ export interface GraphPoint {
   ev: number;
 }
 
+export interface LineRow {
+  line: string;
+  hands: number;
+  netBB: number;
+  /** Mean bb per hand and its standard error */
+  perHand: number;
+  perHandSe: number | null;
+  /** Mean All-in-EV-adjusted bb per hand */
+  evPerHand: number;
+}
+
 export interface GridCell {
   dealt: number;
   vpip: number;
@@ -123,4 +136,8 @@ export interface StatsResult {
   byStack: Record<StackGroup, GroupRow>;
   graph: GraphPoint[];
   grid: Record<string, GridCell>;
+  /** Results by preflop action line, worst total first */
+  lines: LineRow[];
+  /** Same, with the opener position merged */
+  linesCoarse: LineRow[];
 }

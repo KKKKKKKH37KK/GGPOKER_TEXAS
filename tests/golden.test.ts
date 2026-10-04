@@ -29,6 +29,13 @@ describe('fixture facts', () => {
     expect(f.potType).toBe('SRP');
   });
 
+  it('action lines on fixtures', () => {
+    expect(analyzeHand(fixture('RC4772226199')).line).toBe('Open → 無人 3Bet');
+    expect(analyzeHand(fixture('RC4772175885')).line).toBe('3Bet vs CO');
+    expect(analyzeHand(fixture('RC4772225996')).line).toBe('Walk');
+    expect(analyzeHand(fixture('RC4772496598')).line).toBe('Fold');
+  });
+
   it('3bet from SB then cbet and fold to turn bet', () => {
     const f = analyzeHand(fixture('RC4772175885'));
     expect(f.position).toBe('SB');
@@ -162,6 +169,18 @@ describe.skipIf(!hasZip)('golden values (PRD §7)', () => {
     // pre-rake bb/100 = (net + rake + jackpot) / hands × 100
     const pre = ((r.netBB + r.rakeBB.rakeContrib + r.rakeBB.jackpotContrib) / r.hands) * 100;
     expect(pre.toFixed(2)).toBe('3.95');
+  });
+
+  it('action lines cover every hand and match key cells', () => {
+    expect(r.lines.reduce((a, l) => a + l.hands, 0)).toBe(7880);
+    const byLine = (rows: typeof r.lines, name: string) => rows.find((l) => l.line === name)!;
+    expect(byLine(r.lines, 'Open → 無人 3Bet')).toMatchObject({ hands: 1066 });
+    expect(byLine(r.lines, 'Open → Fold to 3Bet').netBB).toBeCloseTo(-462.0, 1);
+    expect(byLine(r.lines, 'Walk').hands).toBe(230);
+    expect(byLine(r.linesCoarse, 'BB call').hands).toBe(390); // = BB Call vs Open numerator
+    const bb100 = aggregate(facts, { stackGroups: ['S100'], positions: ['BB'] });
+    expect(byLine(bb100.lines, 'BB call vs HJ')).toMatchObject({ hands: 74 });
+    expect(byLine(bb100.lines, 'BB call vs HJ').netBB).toBeCloseTo(-75.2, 1);
   });
 
   it('bb/100 standard error (per-hand SD ≈ 8.05 bb)', () => {

@@ -77,6 +77,7 @@ export function analyzeHand(hand: Hand): HandFacts {
     heroCards: hand.heroCards,
     board: hand.boards[0] ?? [],
     walk: pre.walk,
+    line: pre.line,
     potType: pre.potType,
     s: { ...pre.s, ...post.s },
     ctx: post.ctx,
