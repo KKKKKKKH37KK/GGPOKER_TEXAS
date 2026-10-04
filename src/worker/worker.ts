@@ -4,6 +4,7 @@ import { parseFiles, readZip, type SourceFile } from '../parser/parseZip';
 import type { Hand } from '../parser/types';
 import { heroNet } from '../stats/accounting';
 import { analyzeHand } from '../stats/facts';
+import { buildReplay } from '../stats/replay';
 import type { FromWorker, ToWorker } from './protocol';
 
 declare const self: DedicatedWorkerGlobalScope;
@@ -17,7 +18,10 @@ self.onmessage = async (e: MessageEvent<ToWorker>) => {
   const msg = e.data;
   try {
     if (msg.type === 'load') await load(msg.files);
-    else if (msg.type === 'exportHands') {
+    else if (msg.type === 'getReplay') {
+      const hand = hands.find((h) => h.id === msg.id);
+      post({ type: 'replay', id: msg.id, replay: hand ? buildReplay(hand) : null });
+    } else if (msg.type === 'exportHands') {
       const set = msg.ids ? new Set(msg.ids) : null;
       post({ type: 'exported', json: JSON.stringify(set ? hands.filter((h) => set.has(h.id)) : hands, null, 1) });
     }

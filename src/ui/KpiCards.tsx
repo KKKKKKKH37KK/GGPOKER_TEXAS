@@ -3,15 +3,16 @@ import type { StatsResult } from '../stats/types';
 import { dollars, int, signed, tone } from './format';
 import { RatioCell } from './RatioCell';
 import { benchFor, type Settings } from './settings';
-import { defText } from './StatsTable';
+import type { Drill } from './drill';
+import { defText, statDrill } from './StatsTable';
 import { Bb100, Term } from './Term';
 
 const KPI_STATS: StatKey[] = ['vpip', 'pfr', 'threeBet', 'wtsd', 'wsd'];
 
-export function KpiCards({ r, settings, evReady }: { r: StatsResult; settings: Settings; evReady: boolean }) {
+export function KpiCards({ r, settings, evReady, onDrill }: { r: StatsResult; settings: Settings; evReady: boolean; onDrill: (d: Drill) => void }) {
   return (
     <section className="kpis">
-      <div className="kpi">
+      <div className="kpi clickable" onClick={() => onDrill({ title: '全部手牌', match: () => true })} title="點擊列出全部手牌">
         <div className="kpi-label">
           <Term en="Hands" zh={GLOSSARY.Hands} />
         </div>
@@ -50,7 +51,7 @@ export function KpiCards({ r, settings, evReady }: { r: StatsResult; settings: S
             <Term en={STAT_DEFS[k].label} zh={STAT_DEFS[k].zh} />
           </div>
           <div className="kpi-value">
-            <RatioCell r={r.stats[k]} def={defText(k)} bench={benchFor(settings, k)} />
+            <RatioCell r={r.stats[k]} def={defText(k)} bench={benchFor(settings, k)} onClick={() => onDrill(statDrill(k))} />
           </div>
         </div>
       ))}

@@ -1,10 +1,11 @@
 import {
   AF_DEF, GLOSSARY, POST_TABLE, PRE_TABLE, RESULT_DEFS, STAT_DEFS, STAT_KEYS, SUB_ROWS, type StatKey,
 } from '../stats/definitions';
-import type { SplitKey, StatsResult } from '../stats/types';
+import type { HandFacts, SplitKey, StatsResult } from '../stats/types';
 import { dollars, signed, tone } from './format';
 import { RatioCell } from './RatioCell';
 import { benchFor, benchText, valueFlag, type Settings } from './settings';
+import { type Drill, statValue } from './drill';
 import { Bb100, Term } from './Term';
 
 export const defText = (k: StatKey) =>
@@ -12,7 +13,23 @@ export const defText = (k: StatKey) =>
 
 const SPLITS: SplitKey[] = ['IP', 'OOP', 'SRP', '3BP', '4BP+', 'HU', 'MW'];
 
-function Rows({ keys, r, settings }: { keys: StatKey[]; r: StatsResult; settings: Settings }) {
+export const statDrill = (k: StatKey): Drill => ({
+  title: `${STAT_DEFS[k].label}（${STAT_DEFS[k].zh}）`,
+  statKey: k,
+  match: (f) => statValue(f, k) !== undefined,
+});
+
+function splitMatch(k: StatKey, s: SplitKey) {
+  return (f: HandFacts) => {
+    const c = f.ctx[k];
+    if (f.s[k] === undefined || !c) return false;
+    if (s === 'IP' || s === 'OOP') return c.ip === (s === 'IP');
+    if (s === 'HU' || s === 'MW') return c.multiway === (s === 'MW');
+    return f.potType === s;
+  };
+}
+
+function Rows({ keys, r, settings, onDrill }: { keys: StatKey[]; r: StatsResult; settings: Settings; onDrill: (d: Drill) => void }) {
   return (
     <>
       {keys.map((k) => {
@@ -23,7 +40,7 @@ function Rows({ keys, r, settings }: { keys: StatKey[]; r: StatsResult; settings
               <Term en={STAT_DEFS[k].label} zh={STAT_DEFS[k].zh} />
             </th>
             <td>
-              <RatioCell r={r.stats[k]} def={defText(k)} bench={bench} />
+              <RatioCell r={r.stats[k]} def={defText(k)} bench={bench} onClick={() => onDrill(statDrill(k))} />
             </td>
             <td className="bench" title="參考範圍（近似值，可在設定中修改）">
               {benchText(bench)}
@@ -47,7 +64,7 @@ function ResultRow({ label, title, children, dot }: { label: string; title: stri
   );
 }
 
-export function StatsTable({ r, settings, evReady }: { r: StatsResult; settings: Settings; evReady: boolean }) {
+export function StatsTable({ r, settings, evReady, onDrill }: { r: StatsResult; settings: Settings; evReady: boolean; onDrill: (d: Drill) => void }) {
   const af = r.af.den ? r.af.num / r.af.den : null;
   const afBench = benchFor(settings, 'af');
   const afFlag = valueFlag(af, afBench);
@@ -68,7 +85,7 @@ export function StatsTable({ r, settings, evReady }: { r: StatsResult; settings:
             </tr>
           </thead>
           <tbody>
-            <Rows keys={PRE_TABLE} r={r} settings={settings} />
+            <Rows keys={PRE_TABLE} r={r} settings={settings} onDrill={onDrill} />
           </tbody>
         </table>
       </div>
@@ -102,7 +119,7 @@ export function StatsTable({ r, settings, evReady }: { r: StatsResult; settings:
               </td>
               <td className="bench">{benchText(afBench, '')}</td>
             </tr>
-            <Rows keys={POST_TABLE} r={r} settings={settings} />
+            <Rows keys={POST_TABLE} r={r} settings={settings} onDrill={onDrill} />
           </tbody>
         </table>
       </div>
@@ -170,7 +187,12 @@ export function StatsTable({ r, settings, evReady }: { r: StatsResult; settings:
                     const cell = r.splits[k]?.[s] ?? { num: 0, den: 0 };
                     return (
                       <td key={s}>
-                        <RatioCell r={cell} def={`${defText(k)}\n切分：${s}（${GLOSSARY[s]}）`} compact />
+                        <RatioCell
+                          r={cell}
+                          def={`${defText(k)}\n切分：${s}（${GLOSSARY[s]}）`}
+                          compact
+                          onClick={() => onDrill({ title: `${STAT_DEFS[k].label} · ${s}（${GLOSSARY[s]}）`, statKey: k, match: splitMatch(k, s) })}
+                        />
                       </td>
                     );
                   })}

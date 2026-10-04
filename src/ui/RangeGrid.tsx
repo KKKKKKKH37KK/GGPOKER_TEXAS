@@ -18,7 +18,7 @@ function label(i: number, j: number) {
 }
 
 /** F10: 13×13 starting-hand grid. Suited above the diagonal, offsuit below. Respects the global filters. */
-export function RangeGrid({ grid }: { grid: Record<string, GridCell> }) {
+export function RangeGrid({ grid, onCell }: { grid: Record<string, GridCell>; onCell: (combo: string) => void }) {
   const [metric, setMetric] = useState<Metric>('rfi');
   const maxDealt = Math.max(1, ...Object.values(grid).map((c) => c.dealt));
 
@@ -73,7 +73,13 @@ export function RangeGrid({ grid }: { grid: Record<string, GridCell> }) {
               ? `${l}\n發到 ${c.dealt} 次\nRFI 開池 ${pct(c.rfi, c.rfiOpp)}\nVPIP 入池 ${pct(c.vpip, c.dealt)}\nPFR 加注 ${pct(c.pfr, c.dealt)}\n平均 ${signed(c.netBB / c.dealt, 2)} bb · 合計 ${signed(c.netBB, 1)} bb`
               : `${l}\n未發到`;
             return (
-              <div key={l} className={`rg-cell${i === j ? ' pair' : ''}${c ? '' : ' empty'}`} style={cellStyle(c)} title={tip}>
+              <div
+                key={l}
+                className={`rg-cell${i === j ? ' pair' : ''}${c ? ' clickable' : ' empty'}`}
+                style={cellStyle(c)}
+                title={c ? `${tip}\n（點擊查看這些手牌）` : tip}
+                onClick={c ? () => onCell(l) : undefined}
+              >
                 <span className="rg-label">{l}</span>
                 <span className="rg-val">{value(c)}</span>
               </div>

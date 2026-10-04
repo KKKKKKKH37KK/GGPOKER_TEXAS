@@ -4,19 +4,23 @@ import { int, signed, tone } from './format';
 import { RatioCell } from './RatioCell';
 import { benchFor, type Settings } from './settings';
 import { defText } from './StatsTable';
+import type { HandFacts } from '../stats/types';
+import type { Drill } from './drill';
+import { statDrill } from './StatsTable';
 import { Bb100, Term } from './Term';
 
 const COLS: StatKey[] = ['vpip', 'pfr', 'rfi', 'threeBet', 'foldTo3Bet', 'foldToSteal', 'sawFlop', 'wtsd', 'wsd', 'flopCbet'];
 
 interface Props {
   title: string;
-  rows: { key: string; label: string; zh?: string; row: GroupRow; bench?: Partial<Record<StatKey, StatKey | null>> }[];
+  rows: { key: string; label: string; zh?: string; row: GroupRow; bench?: Partial<Record<StatKey, StatKey | null>>; match: (f: HandFacts) => boolean }[];
+  onDrill: (d: Drill) => void;
   settings: Settings;
   note?: string;
 }
 
 /** F5 (by position) and F9 (by stack depth) */
-export function GroupTable({ title, rows, settings, note }: Props) {
+export function GroupTable({ title, rows, settings, note, onDrill }: Props) {
   return (
     <section className="card">
       <h2>
@@ -45,9 +49,9 @@ export function GroupTable({ title, rows, settings, note }: Props) {
             </tr>
           </thead>
           <tbody>
-            {rows.map(({ key, label, zh, row, bench }) => (
+            {rows.map(({ key, label, zh, row, bench, match }) => (
               <tr key={key}>
-                <th scope="row">
+                <th scope="row" className="clickable" title="點擊查看這一列的所有手牌" onClick={() => onDrill({ title: `${title} · ${label}`, match })}>
                   <Term en={label} zh={zh} />
                 </th>
                 <td>{int(row.hands)}</td>
@@ -62,6 +66,10 @@ export function GroupTable({ title, rows, settings, note }: Props) {
                       r={row.stats[k]}
                       def={defText(k)}
                       bench={bench && k in bench ? (bench[k] ? benchFor(settings, bench[k]!) : undefined) : benchFor(settings, k)}
+                      onClick={() => {
+                        const d = statDrill(k);
+                        onDrill({ ...d, title: `${d.title} · ${label}`, match: (f) => match(f) && d.match(f) });
+                      }}
                     />
                   </td>
                 ))}

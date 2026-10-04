@@ -15,6 +15,9 @@ export function createStatsWorker(listener: Listener) {
     exportHands(ids: string[] | null) {
       send({ type: 'exportHands', ids });
     },
+    getReplay(id: string) {
+      send({ type: 'getReplay', id });
+    },
     terminate: () => worker.terminate(),
   };
 }

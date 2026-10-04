@@ -589,3 +589,142 @@ tr.strong-row th,
 tr.strong-row td {
   font-weight: 600;
 }
+
+/* Drill-down & replay */
+.clickable {
+  cursor: pointer;
+}
+.ratio.clickable:hover,
+th.clickable:hover,
+.kpi.clickable:hover {
+  outline: 1px solid var(--accent);
+  outline-offset: 1px;
+}
+tr.clickable:hover td {
+  background: var(--accent-soft);
+}
+.rg-cell.clickable:hover {
+  outline: 2px solid var(--accent);
+}
+.modal.wide {
+  max-width: 1000px;
+}
+.modal.replay {
+  max-width: 640px;
+}
+.modal-backdrop.top {
+  z-index: 20;
+}
+.list-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin: 8px 0;
+}
+.list-controls .seg {
+  margin-left: 0;
+}
+.pager {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+table.hand-list td,
+table.hand-list th {
+  text-align: left;
+}
+.dealt-note {
+  padding: 1px 4px;
+}
+.search {
+  display: flex;
+  gap: 4px;
+}
+.search input {
+  width: 220px;
+}
+.cards {
+  display: inline-flex;
+  gap: 2px;
+}
+.card {
+  display: inline-block;
+  min-width: 26px;
+  padding: 0 3px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  font-weight: 600;
+  text-align: center;
+  font-size: 12px;
+  line-height: 18px;
+}
+.suit-s {
+  color: var(--text);
+}
+.suit-h {
+  color: #d63b3b;
+}
+.suit-d {
+  color: #2f6fd6;
+}
+.suit-c {
+  color: #1f9a50;
+}
+.replay-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+table.seats td {
+  text-align: left;
+}
+tr.hero-row td {
+  background: var(--accent-soft);
+}
+.street {
+  border-top: 1px solid var(--grid);
+  padding: 8px 0;
+}
+.street-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.act {
+  display: grid;
+  grid-template-columns: 40px 90px 1fr auto;
+  gap: 6px;
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+.act.hero {
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+.act-pos {
+  color: var(--muted);
+}
+.act-name {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+}
+.street.result {
+  display: grid;
+  gap: 2px;
+}
+@media (max-width: 600px) {
+  .search input {
+    width: 150px;
+  }
+  .act {
+    grid-template-columns: 34px 70px 1fr;
+  }
+  .act-pot {
+    grid-column: 3;
+  }
+}

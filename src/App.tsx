@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Position } from './parser/types';
-import { POSITIONS, STACK_GROUPS, aggregate, applyFilter } from './stats/aggregate';
+import { POSITIONS, STACK_GROUPS, aggregate, applyFilter, stackGroup } from './stats/aggregate';
+import type { Replay } from './stats/replay';
 import { GLOSSARY, STAT_KEYS, type StatKey } from './stats/definitions';
 import type { Filter, HandFacts } from './stats/types';
 import { createStatsWorker } from './worker/client';
 import type { FromWorker, InputFile, LoadSummary } from './worker/protocol';
 import { download, statsToCsv } from './ui/exportCsv';
+import type { Drill } from './ui/drill';
 import { Filters, stackLabel } from './ui/Filters';
+import { HandList } from './ui/HandList';
+import { HandReplay } from './ui/HandReplay';
 import { dollars, int } from './ui/format';
 import { GroupTable } from './ui/GroupTable';
 import { KpiCards } from './ui/KpiCards';
@@ -43,6 +47,10 @@ export default function App() {
   const [filter, setFilter] = useState<Filter>({});
   const [settings, setSettings] = useSettings();
   const [showSettings, setShowSettings] = useState(false);
+  const [drill, setDrill] = useState<Drill | null>(null);
+  const [replayNav, setReplayNav] = useState<{ ids: string[]; index: number } | null>(null);
+  const [replay, setReplay] = useState<Replay | null>(null);
+  const [search, setSearch] = useState('');
   const workerRef = useRef<ReturnType<typeof createStatsWorker> | null>(null);
 
   useEffect(() => {
@@ -63,6 +71,13 @@ export default function App() {
           break;
         case 'exported':
           download('hands.json', msg.json, 'application/json');
+          break;
+        case 'replay':
+          if (msg.replay) setReplay(msg.replay);
+          else {
+            setReplayNav(null);
+            setError(`找不到手牌 ${msg.id}（只能查已載入的 Hold'em 手牌）`);
+          }
           break;
         case 'error':
           setError(msg.message);
@@ -100,6 +115,23 @@ export default function App() {
   };
 
   const skipped = summary ? Object.values(summary.skipped).reduce((a, b) => a + b, 0) : 0;
+  const filtered = useMemo(() => (withEv ? applyFilter(withEv, filter, settings.bounds) : []), [withEv, filter, settings.bounds]);
+
+  const openReplay = (ids: string[], index: number) => {
+    setReplayNav({ ids, index });
+    setReplay(null);
+    workerRef.current?.getReplay(ids[index]);
+  };
+  const stepReplay = (delta: number) => {
+    if (!replayNav) return;
+    const index = replayNav.index + delta;
+    if (index < 0 || index >= replayNav.ids.length) return;
+    openReplay(replayNav.ids, index);
+  };
+  const searchHand = () => {
+    const id = search.trim().replace(/^#/, '').toUpperCase();
+    if (id) openReplay([id.startsWith('RC') ? id : `RC${id}`], 0);
+  };
 
   return (
     <div className="app">
@@ -116,6 +148,18 @@ export default function App() {
           </div>
         )}
         <div className="actions">
+          {facts && (
+            <form
+              className="search"
+              onSubmit={(e) => {
+                e.preventDefault();
+                searchHand();
+              }}
+            >
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="手牌 ID，例如 RC4772226199" aria-label="手牌 ID" />
+              <button type="submit">查看</button>
+            </form>
+          )}
           {result && (
             <>
               <button onClick={() => download('stats.csv', statsToCsv(result, settings.bounds), 'text/csv')}>匯出 CSV</button>
@@ -136,9 +180,9 @@ export default function App() {
             <p className="empty">篩選後沒有手牌。</p>
           ) : (
             <>
-              <KpiCards r={result} settings={settings} evReady={!!ev} />
+              <KpiCards r={result} settings={settings} evReady={!!ev} onDrill={setDrill} />
               <WinGraph data={result.graph} evReady={!!ev} />
-              <StatsTable r={result} settings={settings} evReady={!!ev} />
+              <StatsTable r={result} settings={settings} evReady={!!ev} onDrill={setDrill} />
               <RakeCard r={result} settings={settings} onRakeback={(pct) => setSettings({ ...settings, rakebackPct: pct })} />
               <GroupTable
                 title="依位置"
@@ -149,16 +193,24 @@ export default function App() {
                   zh: GLOSSARY[p],
                   row: result.byPosition[p],
                   bench: positionBench(p),
+                  match: (f: HandFacts) => f.position === p,
                 }))}
                 settings={settings}
+                onDrill={setDrill}
               />
               <GroupTable
                 title="依籌碼深度"
                 note={settings.bounds.basis === 'hero' ? 'Hero 起始籌碼' : '有效籌碼（Hero vs 仍在牌局中最深的對手）'}
-                rows={STACK_GROUPS.map((g) => ({ key: g, label: stackLabel(g, settings.bounds), row: result.byStack[g] }))}
+                rows={STACK_GROUPS.map((g) => ({
+                  key: g,
+                  label: stackLabel(g, settings.bounds),
+                  row: result.byStack[g],
+                  match: (f: HandFacts) => stackGroup(f, settings.bounds) === g,
+                }))}
                 settings={settings}
+                onDrill={setDrill}
               />
-              <RangeGrid grid={result.grid} />
+              <RangeGrid grid={result.grid} onCell={(combo) => setDrill({ title: `起手牌 ${combo}`, match: (f) => f.combo === combo && !f.walk })} />
             </>
           )}
           {skipped > 0 && (
@@ -171,6 +223,20 @@ export default function App() {
         </main>
       )}
 
+      {drill && <HandList drill={drill} facts={filtered} onOpen={openReplay} onClose={() => setDrill(null)} />}
+      {replayNav && (
+        <HandReplay
+          replay={replay}
+          loading={!replay}
+          position={replayNav.ids.length > 1 ? { index: replayNav.index, total: replayNav.ids.length } : null}
+          onPrev={() => stepReplay(-1)}
+          onNext={() => stepReplay(1)}
+          onClose={() => {
+            setReplayNav(null);
+            setReplay(null);
+          }}
+        />
+      )}
       {showSettings && <SettingsPanel settings={settings} onChange={setSettings} onClose={() => setShowSettings(false)} />}
     </div>
   );

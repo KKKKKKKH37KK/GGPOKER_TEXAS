@@ -74,6 +74,8 @@ export function analyzeHand(hand: Hand): HandFacts {
     effStackBB: effectiveStack(hand, post.sawFlop) / hand.bb,
     sawFlop: post.sawFlop,
     combo: comboLabel(hand.heroCards),
+    heroCards: hand.heroCards,
+    board: hand.boards[0] ?? [],
     walk: pre.walk,
     potType: pre.potType,
     s: { ...pre.s, ...post.s },

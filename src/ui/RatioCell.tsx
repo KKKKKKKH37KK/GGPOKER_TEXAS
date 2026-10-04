@@ -8,6 +8,8 @@ interface Props {
   def?: string;
   bench?: Benchmark;
   compact?: boolean;
+  /** Click to list the hands behind this number */
+  onClick?: () => void;
 }
 
 const FLAG_TEXT = {
@@ -28,11 +30,17 @@ export function ratioTooltip(r: Ratio, def?: string, bench?: Benchmark): string 
   return lines.filter(Boolean).join('\n');
 }
 
-export function RatioCell({ r, def, bench, compact }: Props) {
+export function RatioCell({ r, def, bench, compact, onClick }: Props) {
   const flag = benchFlag(r, bench);
-  const cls = ['ratio', r.den < MIN_SAMPLE ? 'low-n' : '', flag ? `bench-${flag}` : ''].filter(Boolean).join(' ');
+  const clickable = !!onClick && r.den > 0;
+  const cls = ['ratio', r.den < MIN_SAMPLE ? 'low-n' : '', flag ? `bench-${flag}` : '', clickable ? 'clickable' : ''].filter(Boolean).join(' ');
   return (
-    <span className={cls} title={ratioTooltip(r, def, bench)}>
+    <span
+      className={cls}
+      title={ratioTooltip(r, def, bench) + (clickable ? '\n（點擊查看這些手牌）' : '')}
+      onClick={clickable ? onClick : undefined}
+      role={clickable ? 'button' : undefined}
+    >
       <span className="pct">{pctText(r)}</span>
       {r.den > 0 &&
         (compact ? (

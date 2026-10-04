@@ -36,6 +36,9 @@ export interface HandFacts {
   sawFlop: boolean;
   /** "AKs" / "T9o" / "QQ" */
   combo: string | null;
+  heroCards: string[] | null;
+  /** First-run board */
+  board: string[];
   walk: boolean;
   potType: PotType;
   /** Recorded ratio stats: key present = opportunity, value 1 = made */
