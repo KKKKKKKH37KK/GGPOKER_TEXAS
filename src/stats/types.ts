@@ -66,6 +66,8 @@ export interface GroupRow {
   netCents: number;
   netBB: number;
   bb100: number | null;
+  /** Standard error of bb/100 */
+  bb100Se: number | null;
   stats: Record<StatKey, Ratio>;
 }
 
@@ -82,6 +84,9 @@ export interface GridCell {
   vpip: number;
   pfr: number;
   netBB: number;
+  /** RFI opportunities / raises (first in, unopened) */
+  rfiOpp: number;
+  rfi: number;
 }
 
 export interface StatsResult {
@@ -91,7 +96,10 @@ export interface StatsResult {
   netCents: number;
   netBB: number;
   bb100: number | null;
+  bb100Se: number | null;
   evNetBB: number;
+  evBb100: number | null;
+  evBb100Se: number | null;
   evHands: number;
   stats: Record<StatKey, Ratio>;
   af: Ratio;

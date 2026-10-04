@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { Position } from './parser/types';
 import { POSITIONS, STACK_GROUPS, aggregate, applyFilter } from './stats/aggregate';
+import { GLOSSARY, STAT_KEYS, type StatKey } from './stats/definitions';
 import type { Filter, HandFacts } from './stats/types';
 import { createStatsWorker } from './worker/client';
 import type { FromWorker, InputFile, LoadSummary } from './worker/protocol';
@@ -15,6 +17,12 @@ import { StatsTable } from './ui/StatsTable';
 import { Upload } from './ui/Upload';
 import { Warnings } from './ui/Warnings';
 import { WinGraph } from './ui/WinGraph';
+
+/** Overall reference ranges do not apply per position; only RFI has position-specific ones. */
+function positionBench(p: Position): Partial<Record<StatKey, StatKey | null>> {
+  const none = Object.fromEntries(STAT_KEYS.map((k) => [k, null])) as Record<StatKey, StatKey | null>;
+  return { ...none, rfi: p === 'BB' ? null : (`rfi${p}` as StatKey) };
+}
 
 const PHASE_LABEL: Record<string, string> = {
   read: '讀取檔案',
@@ -132,7 +140,14 @@ export default function App() {
               <StatsTable r={result} settings={settings} evReady={!!ev} />
               <GroupTable
                 title="依位置"
-                rows={POSITIONS.map((p) => ({ key: p, label: p, row: result.byPosition[p] }))}
+                note="參考範圍依位置差異很大，此表只對 RFI 標色（用各位置的 RFI 範圍）"
+                rows={POSITIONS.map((p) => ({
+                  key: p,
+                  label: p,
+                  zh: GLOSSARY[p],
+                  row: result.byPosition[p],
+                  bench: positionBench(p),
+                }))}
                 settings={settings}
               />
               <GroupTable

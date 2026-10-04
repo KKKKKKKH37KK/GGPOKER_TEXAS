@@ -1,5 +1,6 @@
 import type { Position } from '../parser/types';
 import { POSITIONS, STACK_GROUPS } from '../stats/aggregate';
+import { GLOSSARY } from '../stats/definitions';
 import type { Filter, PotType, StackBounds, StackGroup } from '../stats/types';
 
 const POT_TYPES: { key: PotType; label: string }[] = [
@@ -53,6 +54,7 @@ export function Filters({ filter, onChange, bounds, dateRange }: Props) {
         {POSITIONS.map((p: Position) => (
           <button
             key={p}
+            title={GLOSSARY[p]}
             className={filter.positions?.includes(p) ? 'on' : ''}
             onClick={() => onChange({ ...filter, positions: toggle(filter.positions, p) })}
           >
@@ -75,6 +77,7 @@ export function Filters({ filter, onChange, bounds, dateRange }: Props) {
         {POT_TYPES.map((t) => (
           <button
             key={t.key}
+            title={GLOSSARY[t.label]}
             className={filter.potTypes?.includes(t.key) ? 'on' : ''}
             onClick={() => onChange({ ...filter, potTypes: toggle(filter.potTypes, t.key) })}
           >

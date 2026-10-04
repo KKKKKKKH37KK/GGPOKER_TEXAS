@@ -1,5 +1,5 @@
-import { POST_TABLE, PRE_TABLE, STAT_DEFS, type StatKey } from '../stats/definitions';
-import type { Benchmark, Settings } from './settings';
+import { AF_DEF, POST_TABLE, PRE_TABLE, STAT_DEFS, type StatKey } from '../stats/definitions';
+import { benchFor, defaultBench, type Benchmark, type BenchKey, type Settings } from './settings';
 
 interface Props {
   settings: Settings;
@@ -11,14 +11,20 @@ const num = (v: string) => (v.trim() === '' || Number.isNaN(Number(v)) ? undefin
 
 /** F9 stack-depth boundaries and F14 target ranges. Stored in this browser only. */
 export function SettingsPanel({ settings, onChange, onClose }: Props) {
-  const setBench = (k: StatKey | 'af', patch: Benchmark) => {
-    const next = { ...settings.benchmarks[k], ...patch };
+  // Editing a row stores an override seeded from the current (default) range.
+  const setBench = (k: BenchKey, patch: Benchmark) => {
+    const next = { ...benchFor(settings, k), ...patch };
     onChange({ ...settings, benchmarks: { ...settings.benchmarks, [k]: next } });
   };
-  const rows: { key: StatKey | 'af'; label: string; unit: string }[] = [
-    ...PRE_TABLE.map((k) => ({ key: k, label: STAT_DEFS[k].label, unit: '%' })),
-    { key: 'af', label: 'AF', unit: '' },
-    ...POST_TABLE.map((k) => ({ key: k, label: STAT_DEFS[k].label, unit: '%' })),
+  const resetOne = (k: BenchKey) => {
+    const rest = { ...settings.benchmarks };
+    delete rest[k];
+    onChange({ ...settings, benchmarks: rest });
+  };
+  const rows: { key: BenchKey; label: string; zh: string; unit: string }[] = [
+    ...PRE_TABLE.map((k: StatKey) => ({ key: k, label: STAT_DEFS[k].label, zh: STAT_DEFS[k].zh, unit: '%' })),
+    { key: 'af', label: 'AF', zh: AF_DEF.zh, unit: '' },
+    ...POST_TABLE.map((k: StatKey) => ({ key: k, label: STAT_DEFS[k].label, zh: STAT_DEFS[k].zh, unit: '%' })),
   ];
 
   return (
@@ -69,15 +75,22 @@ export function SettingsPanel({ settings, onChange, onClose }: Props) {
         </div>
 
         <h3>
-          基準區間
-          <span className="h-note">超出區間的格子會標色（低於 = 藍、高於 = 紅）</span>
+          參考範圍
+          <span className="h-note">
+            預設值是 6-max NL 約 100bb 贏家常見範圍的近似值（經驗值，非 solver 解），請依自己的 GTO 研究調整。
+            低於 = 藍、高於 = 紅；深色 = 95% 區間整個在範圍外（偏離可信），淺色 = 只有點估計超出（可能是雜訊）。
+          </span>
         </h3>
         <div className="bench-list">
           {rows.map((r) => {
-            const b = settings.benchmarks[r.key] ?? {};
+            const b = benchFor(settings, r.key) ?? {};
+            const d = defaultBench(r.key);
+            const overridden = r.key in settings.benchmarks;
             return (
               <div key={r.key} className="bench-row">
-                <span>{r.label}</span>
+                <span>
+                  {r.label} <span className="muted small">{r.zh}</span>
+                </span>
                 <input
                   type="number"
                   step="0.1"
@@ -93,12 +106,19 @@ export function SettingsPanel({ settings, onChange, onClose }: Props) {
                   onChange={(e) => setBench(r.key, { max: num(e.target.value) })}
                 />
                 <span className="muted">{r.unit}</span>
+                {overridden ? (
+                  <button className="link small" onClick={() => resetOne(r.key)} title={d ? `預設 ${d.min}–${d.max}` : '預設無範圍'}>
+                    預設
+                  </button>
+                ) : (
+                  <span />
+                )}
               </div>
             );
           })}
         </div>
         <button className="link" onClick={() => onChange({ ...settings, benchmarks: {} })}>
-          清除所有基準
+          全部還原為預設範圍
         </button>
       </div>
     </div>

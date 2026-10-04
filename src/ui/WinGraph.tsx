@@ -4,9 +4,9 @@ import { int, signed } from './format';
 
 const SERIES = [
   { key: 'total', name: '總盈虧', color: 'var(--c-total)' },
-  { key: 'showdown', name: 'Showdown', color: 'var(--c-sd)' },
-  { key: 'nonShowdown', name: 'Non-showdown', color: 'var(--c-nsd)' },
-  { key: 'ev', name: 'All-in EV', color: 'var(--c-ev)' },
+  { key: 'showdown', name: 'Showdown 攤牌', color: 'var(--c-sd)' },
+  { key: 'nonShowdown', name: 'Non-showdown 非攤牌', color: 'var(--c-nsd)' },
+  { key: 'ev', name: 'All-in EV 期望值', color: 'var(--c-ev)' },
 ] as const;
 
 /** F6 + F11: cumulative winnings in bb */

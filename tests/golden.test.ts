@@ -154,6 +154,10 @@ describe.skipIf(!hasZip)('golden values (PRD §7)', () => {
     expect(row.stats.sawFlop.num).toBe(sawFlop);
   });
 
+  it('bb/100 standard error (per-hand SD ≈ 8.05 bb)', () => {
+    expect(r.bb100Se!.toFixed(2)).toBe('9.07');
+  });
+
   it('pot type filter only keeps hands where Hero saw the flop', () => {
     const srp = aggregate(facts, { potTypes: ['SRP'] });
     expect(srp.hands).toBe(885);

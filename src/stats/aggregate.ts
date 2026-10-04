@@ -51,14 +51,29 @@ function statsOf(facts: HandFacts[]): Record<StatKey, Ratio> {
   return out;
 }
 
+/** bb/100 and its standard error from per-hand results in bb (sample SD × 100 / √n). */
+export function winrate(perHandBB: number[]): { bb100: number | null; se: number | null } {
+  const n = perHandBB.length;
+  if (n === 0) return { bb100: null, se: null };
+  const mean = perHandBB.reduce((a, x) => a + x, 0) / n;
+  if (n < 2) return { bb100: mean * 100, se: null };
+  const variance = perHandBB.reduce((a, x) => a + (x - mean) ** 2, 0) / (n - 1);
+  return { bb100: mean * 100, se: Math.sqrt(variance / n) * 100 };
+}
+
+const netBBOf = (f: HandFacts) => f.netCents / f.bb;
+const evBBOf = (f: HandFacts) => (f.evNetCents ?? f.netCents) / f.bb;
+
 function groupRow(facts: HandFacts[]): GroupRow {
   const netCents = facts.reduce((a, f) => a + f.netCents, 0);
-  const netBB = facts.reduce((a, f) => a + f.netCents / f.bb, 0);
+  const netBB = facts.reduce((a, f) => a + netBBOf(f), 0);
+  const wr = winrate(facts.map(netBBOf));
   return {
     hands: facts.length,
     netCents,
     netBB,
-    bb100: facts.length ? (netBB / facts.length) * 100 : null,
+    bb100: wr.bb100,
+    bb100Se: wr.se,
     stats: statsOf(facts),
   };
 }
@@ -108,10 +123,15 @@ function gridOf(facts: HandFacts[]): Record<string, GridCell> {
   const grid: Record<string, GridCell> = {};
   for (const f of facts) {
     if (!f.combo || f.walk) continue; // walks have no decision: they would dilute VPIP/PFR per combo
-    const c = (grid[f.combo] ??= { dealt: 0, vpip: 0, pfr: 0, netBB: 0 });
+    const c = (grid[f.combo] ??= { dealt: 0, vpip: 0, pfr: 0, netBB: 0, rfiOpp: 0, rfi: 0 });
     c.dealt++;
     c.vpip += f.s.vpip ?? 0;
     c.pfr += f.s.pfr ?? 0;
+    const rfi = f.s[`rfi${f.position}` as StatKey];
+    if (rfi !== undefined) {
+      c.rfiOpp++;
+      c.rfi += rfi;
+    }
     c.netBB += f.netCents / f.bb;
   }
   return grid;
@@ -134,6 +154,8 @@ export function aggregate(all: HandFacts[], filter: Filter = {}, bounds: StackBo
   const byStack = Object.fromEntries(
     STACK_GROUPS.map((g) => [g, groupRow(facts.filter((f) => stackGroup(f, bounds) === g))]),
   ) as Record<StackGroup, GroupRow>;
+  const wr = winrate(facts.map(netBBOf));
+  const evWr = winrate(facts.map(evBBOf));
 
   return {
     hands: facts.length,
@@ -141,8 +163,11 @@ export function aggregate(all: HandFacts[], filter: Filter = {}, bounds: StackBo
     n: facts.length - walks,
     netCents,
     netBB,
-    bb100: facts.length ? (netBB / facts.length) * 100 : null,
-    evNetBB: facts.reduce((a, f) => a + (f.evNetCents ?? f.netCents) / f.bb, 0),
+    bb100: wr.bb100,
+    bb100Se: wr.se,
+    evNetBB: facts.reduce((a, f) => a + evBBOf(f), 0),
+    evBb100: evWr.bb100,
+    evBb100Se: evWr.se,
     evHands: evFacts.length,
     stats,
     af: { num: aggr, den: calls },
