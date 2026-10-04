@@ -183,6 +183,14 @@ describe.skipIf(!hasZip)('golden values (PRD §7)', () => {
     expect(byLine(bb100.lines, 'BB call vs HJ').netBB).toBeCloseTo(-75.2, 1);
   });
 
+  it('pre-rake line adds back the rake taken from pots Hero won', () => {
+    const last = r.graph.at(-1)!;
+    expect(last.preRake).toBeCloseTo(r.netBB + r.rakeBB.takeWon, 6);
+    expect((last.preRake * 10).toFixed(0)).toBe('2673'); // −309.2 bb + 576.5 bb (cents: −3092 + 5765)
+    // Without EV data the pre-rake EV line equals the pre-rake actual line
+    expect(last.evPreRake).toBeCloseTo(last.preRake, 6);
+  });
+
   it('bb/100 standard error (per-hand SD ≈ 8.05 bb)', () => {
     expect(r.bb100Se!.toFixed(2)).toBe('9.07');
   });

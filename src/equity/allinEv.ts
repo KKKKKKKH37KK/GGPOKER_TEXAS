@@ -32,6 +32,14 @@ export function findAllInSpot(hand: Hand): AllInSpot | null {
 
 /** Hero's equity-based net result in cents, or null when §5.5 does not apply. */
 export function allInEvNet(hand: Hand, opts: EquityOptions = {}): number | null {
+  return allInEv(hand, opts)?.net ?? null;
+}
+
+/**
+ * Equity-based result in cents: `net` after the house take (proportional), `preRakeNet` before it
+ * (equity × full pot − contribution, the way GG PokerCraft charts it).
+ */
+export function allInEv(hand: Hand, opts: EquityOptions = {}): { net: number; preRakeNet: number } | null {
   const spot = findAllInSpot(hand);
   if (!spot) return null;
   const invested = computeInvested(hand);
@@ -61,6 +69,7 @@ export function allInEvNet(hand: Hand, opts: EquityOptions = {}): number | null 
     pots.map((pot) => pot.eligible.map((p) => spot.live.indexOf(p))),
     { seed: hashSeed(hand.id), ...opts },
   );
-  const expected = pots.reduce((acc, pot, j) => acc + pot.amount * shares[j], 0) * (1 - takeRate);
-  return expected - (invested[HERO] ?? 0);
+  const gross = pots.reduce((acc, pot, j) => acc + pot.amount * shares[j], 0);
+  const mine = invested[HERO] ?? 0;
+  return { net: gross * (1 - takeRate) - mine, preRakeNet: gross - mine };
 }

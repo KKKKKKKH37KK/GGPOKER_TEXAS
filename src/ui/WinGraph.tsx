@@ -7,14 +7,19 @@ const SERIES = [
   { key: 'showdown', name: 'Showdown 攤牌', color: 'var(--c-sd)' },
   { key: 'nonShowdown', name: 'Non-showdown 非攤牌', color: 'var(--c-nsd)' },
   { key: 'ev', name: 'All-in EV 期望值', color: 'var(--c-ev)' },
+  { key: 'preRake', name: '扣抽水前（實際）', color: 'var(--c-total)', dashed: true },
+  { key: 'evPreRake', name: '扣抽水前 All-in EV', color: 'var(--c-ev)', dashed: true },
 ] as const;
 
 /** F6 + F11: cumulative winnings in bb */
 export function WinGraph({ data, evReady }: { data: GraphPoint[]; evReady: boolean }) {
-  const series = evReady ? SERIES : SERIES.filter((s) => s.key !== 'ev');
+  const series = evReady ? SERIES : SERIES.filter((s) => s.key !== 'ev' && s.key !== 'evPreRake');
   return (
     <section className="card">
-      <h2>累積盈虧（bb）</h2>
+      <h2>
+        累積盈虧（bb）
+        <span className="h-note">實線已扣抽水（= 帳戶實際增減）；虛線是扣抽水前，可和 GG PokerCraft 官方圖對照</span>
+      </h2>
       <div className="chart">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
@@ -43,6 +48,7 @@ export function WinGraph({ data, evReady }: { data: GraphPoint[]; evReady: boole
                 name={s.name}
                 stroke={s.color}
                 strokeWidth={s.key === 'total' ? 2 : 1.5}
+                strokeDasharray={'dashed' in s && s.dashed ? '6 3' : undefined}
                 dot={false}
                 isAnimationActive={false}
               />

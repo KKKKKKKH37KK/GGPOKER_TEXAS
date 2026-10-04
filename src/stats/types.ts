@@ -56,6 +56,8 @@ export interface HandFacts {
   rake: RakeShares;
   /** All-in EV net (cents) when §5.5 applies, else undefined */
   evNetCents?: number;
+  /** All-in EV before rake (equity × full pot − contribution), cents */
+  evPreRakeCents?: number;
 }
 
 export interface StackBounds {
@@ -91,6 +93,9 @@ export interface GraphPoint {
   showdown: number;
   nonShowdown: number;
   ev: number;
+  /** Before rake: rake + jackpot taken from the pots Hero won are added back (GG PokerCraft style) */
+  preRake: number;
+  evPreRake: number;
 }
 
 export interface LineRow {

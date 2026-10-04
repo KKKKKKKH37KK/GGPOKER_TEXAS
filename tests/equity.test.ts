@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cardToInt, categoryOf, evaluate } from '../src/equity/evaluator';
 import { potShares } from '../src/equity/equity';
-import { allInEvNet, findAllInSpot } from '../src/equity/allinEv';
+import { allInEv, allInEvNet, findAllInSpot } from '../src/equity/allinEv';
 import { analyzeHand } from '../src/stats/facts';
 import { fixture, hasZip, loadZip } from './helpers';
 
@@ -82,6 +82,11 @@ describe('all-in EV', () => {
       actualSum += analyzeHand(h).netCents;
     }
     expect(spots).toBe(30);
+    // Pre-rake EV never undercuts the after-rake EV
+    for (const h of hands) {
+      const v = allInEv(h, { trials: 2_000 });
+      if (v) expect(v.preRakeNet).toBeGreaterThanOrEqual(v.net);
+    }
     expect(Number.isFinite(evSum)).toBe(true);
     // EV and actual should be the same order of magnitude over ~50 all-ins at NL10.
     expect(Math.abs(evSum - actualSum)).toBeLessThan(20_000);

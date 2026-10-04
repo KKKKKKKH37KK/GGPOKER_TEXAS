@@ -44,7 +44,7 @@ const PHASE_LABEL: Record<string, string> = {
 export default function App() {
   const [facts, setFacts] = useState<HandFacts[] | null>(null);
   const [summary, setSummary] = useState<LoadSummary | null>(null);
-  const [ev, setEv] = useState<Record<string, number> | null>(null);
+  const [ev, setEv] = useState<{ net: Record<string, number>; pre: Record<string, number> } | null>(null);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<{ label: string; frac: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -83,7 +83,7 @@ export default function App() {
           setError(null);
           break;
         case 'ev':
-          setEv(msg.ev);
+          setEv({ net: msg.ev, pre: msg.evPreRake });
           setProgress(null);
           break;
         case 'exported':
@@ -153,7 +153,10 @@ export default function App() {
   };
 
   const withEv = useMemo(
-    () => (facts && ev ? facts.map((f) => (ev[f.id] !== undefined ? { ...f, evNetCents: ev[f.id] } : f)) : facts),
+    () =>
+      facts && ev
+        ? facts.map((f) => (ev.net[f.id] !== undefined ? { ...f, evNetCents: ev.net[f.id], evPreRakeCents: ev.pre[f.id] } : f))
+        : facts,
     [facts, ev],
   );
   const result = useMemo(() => (withEv ? aggregate(withEv, filter, settings.bounds) : null), [withEv, filter, settings.bounds]);

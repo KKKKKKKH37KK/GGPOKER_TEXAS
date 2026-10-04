@@ -101,19 +101,24 @@ function splitsOf(facts: HandFacts[]): StatsResult['splits'] {
 
 function graphOf(facts: HandFacts[]): GraphPoint[] {
   const step = Math.max(1, Math.ceil(facts.length / MAX_GRAPH_POINTS));
-  const pts: GraphPoint[] = [{ hand: 0, total: 0, showdown: 0, nonShowdown: 0, ev: 0 }];
+  const pts: GraphPoint[] = [{ hand: 0, total: 0, showdown: 0, nonShowdown: 0, ev: 0, preRake: 0, evPreRake: 0 }];
   let total = 0;
   let sd = 0;
   let nsd = 0;
   let ev = 0;
+  let pre = 0;
+  let evPre = 0;
   facts.forEach((f, i) => {
     const bb = f.netCents / f.bb;
     total += bb;
     if (f.wtsd) sd += bb;
     else nsd += bb;
     ev += (f.evNetCents ?? f.netCents) / f.bb;
+    const preRakeCents = f.netCents + f.rake.takeWon;
+    pre += preRakeCents / f.bb;
+    evPre += (f.evPreRakeCents ?? preRakeCents) / f.bb;
     if ((i + 1) % step === 0 || i === facts.length - 1) {
-      pts.push({ hand: i + 1, total, showdown: sd, nonShowdown: nsd, ev });
+      pts.push({ hand: i + 1, total, showdown: sd, nonShowdown: nsd, ev, preRake: pre, evPreRake: evPre });
     }
   });
   return pts;

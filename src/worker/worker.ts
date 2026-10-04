@@ -1,5 +1,5 @@
 /// <reference lib="webworker" />
-import { allInEvNet } from '../equity/allinEv';
+import { allInEv } from '../equity/allinEv';
 import { parseFiles, readZip, type SourceFile } from '../parser/parseZip';
 import type { Hand } from '../parser/types';
 import { heroNet } from '../stats/accounting';
@@ -111,14 +111,18 @@ async function analyze(newFiles: number) {
   // All-in EV (P1) is slower; stream it after the report is on screen.
   const t1 = performance.now();
   const ev: Record<string, number> = {};
+  const evPreRake: Record<string, number> = {};
   for (let i = 0; i < hands.length; i++) {
-    const v = allInEvNet(hands[i]);
-    if (v !== null) ev[hands[i].id] = v;
+    const v = allInEv(hands[i]);
+    if (v !== null) {
+      ev[hands[i].id] = v.net;
+      evPreRake[hands[i].id] = v.preRakeNet;
+    }
     if (i % 2000 === 0) {
       post({ type: 'progress', phase: 'ev', done: i, total: hands.length });
       await new Promise((r) => setTimeout(r)); // let a newer load or export request in
       if (token !== loadToken) return;
     }
   }
-  post({ type: 'ev', ev, elapsedMs: performance.now() - t1 });
+  post({ type: 'ev', ev, evPreRake, elapsedMs: performance.now() - t1 });
 }
